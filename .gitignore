@@ -3,3 +3,8 @@ dist/
 *.log
 .DS_Store
 api_key.json
+config/api_key.json
+.vite/
+*.swp
+*.swo
+*~
