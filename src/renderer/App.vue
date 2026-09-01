@@ -1,12 +1,36 @@
 <template>
   <div class="parent">
     <div class="statusline">
-      <select v-model="selectedModel" class="model-picker">
-        <option value="" disabled>Select a model...</option>
-        <option v-for="model in models" :key="model" :value="model">
-          {{ model }}
-        </option>
-      </select>
+      <div class="model-dropdown">
+        <div class="model-display" @click="toggleDropdown">
+          {{ selectedModel || "Select a model..." }}
+          <span class="chevron">{{ dropdownOpen ? "▲" : "▼" }}</span>
+        </div>
+        <div v-if="dropdownOpen" class="model-list">
+          <input
+            v-model="searchQuery"
+            class="model-search"
+            placeholder="Search models..."
+            ref="searchInput"
+            @keydown="onSearchKeydown"
+          />
+          <div class="model-options">
+            <div
+              v-for="(model, i) in filteredModels"
+              :key="model"
+              class="model-option"
+              :class="{ active: model === selectedModel, highlighted: i === activeIndex }"
+              @click="pickModel(model)"
+              @mouseenter="activeIndex = i"
+            >
+              {{ model }}
+            </div>
+            <div v-if="filteredModels.length === 0" class="no-results">
+              No models found
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="div1" id="chat-box">
       <div
@@ -32,12 +56,74 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 
 const messages = ref([]);
 const input = ref("");
 const models = ref([]);
 const selectedModel = ref("");
+const dropdownOpen = ref(false);
+const searchQuery = ref("");
+const searchInput = ref(null);
+const activeIndex = ref(0);
+
+const filteredModels = computed(() => {
+  const query = searchQuery.value.toLowerCase().trim();
+  if (!query) return models.value;
+  return models.value.filter((m) =>
+    m.toLowerCase().includes(query)
+  );
+});
+
+function toggleDropdown() {
+  dropdownOpen.value = !dropdownOpen.value;
+  if (dropdownOpen.value) {
+    searchQuery.value = "";
+    activeIndex.value = 0;
+    nextTick(() => searchInput.value?.focus());
+  }
+}
+
+function pickModel(model) {
+  selectedModel.value = model;
+  dropdownOpen.value = false;
+  searchQuery.value = "";
+}
+
+function onSearchKeydown(e) {
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    if (activeIndex.value < filteredModels.value.length - 1) {
+      activeIndex.value++;
+      scrollActiveIntoView();
+    }
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    if (activeIndex.value > 0) {
+      activeIndex.value--;
+      scrollActiveIntoView();
+    }
+  } else if (e.key === "Enter") {
+    e.preventDefault();
+    if (filteredModels.value.length > 0) {
+      pickModel(filteredModels.value[activeIndex.value]);
+    }
+  } else if (e.key === "Escape") {
+    e.preventDefault();
+    dropdownOpen.value = false;
+    searchQuery.value = "";
+  }
+}
+
+function scrollActiveIntoView() {
+  nextTick(() => {
+    const options = document.querySelector(".model-options");
+    const active = options?.children[activeIndex.value];
+    if (active) {
+      active.scrollIntoView({ block: "nearest" });
+    }
+  });
+}
 
 function msgClass(sender) {
   if (sender === "You") return "msg-user";
@@ -115,6 +201,28 @@ html, body {
   color: var(--text);
   font-family: monospace;
 }
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--bg-secondary);
+}
 </style>
 
 <style scoped>
@@ -165,7 +273,12 @@ html, body {
   flex-direction: column;
 }
 
-.model-picker {
+.model-dropdown {
+  position: relative;
+  max-width: 200px;
+}
+
+.model-display {
   background-color: var(--bg-tertiary);
   color: var(--text);
   border: 1px solid var(--border);
@@ -174,11 +287,91 @@ html, body {
   font-size: 12px;
   padding: 2px 6px;
   cursor: pointer;
-  outline: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
 }
 
-.model-picker:focus {
+.model-display:hover {
   border-color: var(--accent);
+}
+
+.chevron {
+  font-size: 8px;
+  flex-shrink: 0;
+}
+
+.model-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 240px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  z-index: 100;
+  margin-top: 2px;
+}
+
+.model-search {
+  width: 100%;
+  background-color: var(--bg);
+  color: var(--text);
+  border: none;
+  border-bottom: 1px solid var(--border);
+  outline: none;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 6px 8px;
+  box-sizing: border-box;
+}
+
+.model-search:focus {
+  border-bottom-color: var(--accent);
+}
+
+.model-options {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.model-option {
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: monospace;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.model-option:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.model-option.active {
+  background-color: var(--accent);
+  color: var(--bg);
+}
+
+.model-option.highlighted {
+  background-color: var(--bg-tertiary);
+}
+
+.model-option.active.highlighted {
+  background-color: var(--accent);
+  color: var(--bg);
+}
+
+.no-results {
+  padding: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
 }
 
 .input-row {
