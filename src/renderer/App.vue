@@ -1,5 +1,13 @@
 <template>
   <div class="parent">
+    <div class="statusline">
+      <select v-model="selectedModel" class="model-picker">
+        <option value="" disabled>Select a model...</option>
+        <option v-for="model in models" :key="model" :value="model">
+          {{ model }}
+        </option>
+      </select>
+    </div>
     <div class="div1" id="chat-box">
       <div
         v-for="(msg, i) in messages"
@@ -28,11 +36,30 @@ import { ref, onMounted } from "vue";
 
 const messages = ref([]);
 const input = ref("");
+const models = ref([]);
+const selectedModel = ref("");
 
 function msgClass(sender) {
   if (sender === "You") return "msg-user";
   if (sender === "AI") return "msg-ai";
   return "msg-error";
+}
+
+async function loadModels() {
+  if (!window.api) return;
+  try {
+    const result = await window.api.getModels();
+    if (result.ok) {
+      models.value = result.models;
+      if (result.models.length > 0) {
+        selectedModel.value = result.models[0];
+      }
+    } else {
+      console.error("Failed to load models:", result.error);
+    }
+  } catch (err) {
+    console.error("Failed to load models:", err.message);
+  }
 }
 
 async function applyColorScheme() {
@@ -75,6 +102,7 @@ async function sendMessage() {
 
 onMounted(() => {
   applyColorScheme();
+  loadModels();
 });
 </script>
 
@@ -99,7 +127,7 @@ html, body {
 .parent {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  grid-template-rows: repeat(5, 1fr);
+  grid-template-rows: 24px repeat(4, 1fr) 1fr;
   gap: 8px;
   height: 100vh;
   padding: 8px;
@@ -108,8 +136,20 @@ html, body {
   font-family: monospace;
 }
 
+.statusline {
+  grid-row-start: 1;
+  border: 1px solid var(--border);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+}
+
 .div1 {
   grid-row: span 4 / span 4;
+  grid-row-start: 2;
   overflow-y: auto;
   border: 1px solid var(--border);
   background-color: var(--bg);
@@ -117,12 +157,28 @@ html, body {
 }
 
 .div2 {
-  grid-row-start: 5;
+  grid-row-start: 6;
   border: 1px solid var(--border);
   background-color: var(--bg-secondary);
   padding: 8px;
   display: flex;
   flex-direction: column;
+}
+
+.model-picker {
+  background-color: var(--bg-tertiary);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 2px 6px;
+  cursor: pointer;
+  outline: none;
+}
+
+.model-picker:focus {
+  border-color: var(--accent);
 }
 
 .input-row {

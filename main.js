@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
-const { loadConfig } = require("./src/config");
+const { loadConfig, getModels } = require("./src/config");
 
 async function checkApi() {
   const { host, apiKey } = loadConfig();
@@ -52,6 +52,15 @@ ipcMain.handle("get-colors", () => {
   const colorsPath = path.join(__dirname, "config", "colorscheme.json");
   const raw = fs.readFileSync(colorsPath, "utf-8");
   return JSON.parse(raw).colors;
+});
+
+ipcMain.handle("get-models", async () => {
+  try {
+    const models = await getModels();
+    return { ok: true, models };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
 });
 
 app.on("window-all-closed", () => {
