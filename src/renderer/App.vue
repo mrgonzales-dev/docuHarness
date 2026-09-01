@@ -34,11 +34,21 @@ function msgClass(sender) {
 }
 
 async function applyColorScheme() {
-  const colors = await window.api.getColors();
-  const root = document.documentElement;
-  for (const [key, value] of Object.entries(colors)) {
-    const cssKey = "--" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
-    root.style.setProperty(cssKey, value);
+  if (!window.api) {
+    console.error("window.api is not available. Preload may have failed.");
+    return;
+  }
+
+  try {
+    const colors = await window.api.getColors();
+    const root = document.documentElement;
+    for (const [key, value] of Object.entries(colors)) {
+      const cssKey = "--" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
+      root.style.setProperty(cssKey, value);
+    }
+    console.log("Color scheme applied:", Object.keys(colors).length, "colors");
+  } catch (err) {
+    console.error("Failed to apply color scheme:", err.message);
   }
 }
 
@@ -65,6 +75,17 @@ onMounted(() => {
   applyColorScheme();
 });
 </script>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: monospace;
+}
+</style>
 
 <style scoped>
 * {
