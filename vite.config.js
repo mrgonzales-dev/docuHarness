@@ -14,4 +14,9 @@ module.exports = defineConfig({
     outDir: "../../dist",
     emptyOutDir: true,
   },
+  test: {
+    root: ".",
+    include: ["test/**/*.test.ts"],
+    globals: true,
+  },
 });
