@@ -11,12 +11,14 @@
       </div>
     </div>
     <div class="div2">
-      <textarea
-        v-model="input"
-        @keydown.enter.exact.prevent="sendMessage"
-        placeholder="Type a message..."
-      ></textarea>
-      <button @click="sendMessage">Send</button>
+      <div class="input-row">
+        <textarea
+          v-model="input"
+          @keydown.enter.exact.prevent="sendMessage"
+          placeholder="Type a message..."
+        ></textarea>
+        <button @click="sendMessage">Send</button>
+      </div>
     </div>
   </div>
 </template>
@@ -123,6 +125,12 @@ html, body {
   flex-direction: column;
 }
 
+.input-row {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
 textarea {
   flex: 1;
   resize: none;
@@ -140,9 +148,8 @@ textarea:focus {
 }
 
 button {
-  margin-top: 8px;
   padding: 8px 16px;
-  align-self: flex-end;
+  align-self: stretch;
   cursor: pointer;
   background-color: var(--accent);
   color: var(--bg);
