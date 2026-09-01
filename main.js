@@ -1,5 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 const { loadConfig } = require("./src/config");
 
 async function checkApi() {
@@ -20,6 +22,8 @@ async function checkApi() {
 
 let win;
 
+const isDev = process.env.NODE_ENV === "development";
+
 function createWindow() {
   win = new BrowserWindow({
     width: 800,
@@ -31,12 +35,23 @@ function createWindow() {
     },
   });
 
-  win.loadFile("index.html");
+  if (isDev) {
+    win.loadURL("http://127.0.0.1:3000");
+    win.webContents.openDevTools();
+  } else {
+    win.loadFile(path.join(__dirname, "dist", "index.html"));
+  }
 }
 
 app.on("ready", async () => {
   await checkApi();
   createWindow();
+});
+
+ipcMain.handle("get-colors", () => {
+  const colorsPath = path.join(__dirname, "config", "colorscheme.json");
+  const raw = fs.readFileSync(colorsPath, "utf-8");
+  return JSON.parse(raw).colors;
 });
 
 app.on("window-all-closed", () => {
