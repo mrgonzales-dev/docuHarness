@@ -37,25 +37,6 @@ async function loadModels() {
   }
 }
 
-async function applyColorScheme() {
-  if (!window.api) {
-    console.error("window.api is not available. Preload may have failed.");
-    return;
-  }
-
-  try {
-    const colors = await window.api.getColors();
-    const root = document.documentElement;
-    for (const [key, value] of Object.entries(colors)) {
-      const cssKey = "--" + key.replace(/([A-Z])/g, "-$1").toLowerCase();
-      root.style.setProperty(cssKey, value);
-    }
-    console.log("Color scheme applied:", Object.keys(colors).length, "colors");
-  } catch (err) {
-    console.error("Failed to apply color scheme:", err.message);
-  }
-}
-
 async function sendMessage(text) {
   messages.value.push({ sender: "You", text });
 
@@ -72,7 +53,6 @@ async function sendMessage(text) {
 }
 
 onMounted(() => {
-  applyColorScheme();
   loadModels();
 });
 </script>

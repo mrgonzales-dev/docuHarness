@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { loadConfig } = require("./config");
+const { loadConfig } = require("../config.js");
 
 async function chat(messages, model) {
   const { host, apiKey } = loadConfig();
@@ -15,7 +15,7 @@ async function chat(messages, model) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-    }
+    },
   );
 
   return res.data.choices[0].message.content;

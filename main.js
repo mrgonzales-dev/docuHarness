@@ -1,9 +1,8 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow } = require("electron");
 const axios = require("axios");
-const fs = require("fs");
 const path = require("path");
-const { loadConfig, getModels } = require("./src/config");
-const { chat } = require("./src/ai-client-bridge");
+const { loadConfig } = require("./src/config");
+const { registerIpcHandlers } = require("./src/inter-process-communication");
 
 async function checkApi() {
   const { host, apiKey } = loadConfig();
@@ -45,41 +44,9 @@ function createWindow() {
 }
 
 app.on("ready", async () => {
+  registerIpcHandlers();
   await checkApi();
   createWindow();
-});
-
-ipcMain.handle("get-colors", () => {
-  const colorsPath = path.join(__dirname, "config", "colorscheme.json");
-  const raw = fs.readFileSync(colorsPath, "utf-8");
-  return JSON.parse(raw).colors;
-});
-
-ipcMain.handle("get-models", async () => {
-  try {
-    const models = await getModels();
-    return { ok: true, models };
-  } catch (err) {
-    return { ok: false, error: err.message };
-  }
-});
-
-ipcMain.handle("chat", async (event, { message, model }) => {
-  try {
-    const messages = [
-      {
-        role: "system",
-        content:
-          "You are a documentation assistant. You help users find and read documentation.",
-      },
-      { role: "user", content: message },
-    ];
-
-    const reply = await chat(messages, model);
-    return { ok: true, reply };
-  } catch (err) {
-    return { ok: false, error: err.message };
-  }
 });
 
 app.on("window-all-closed", () => {
