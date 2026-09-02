@@ -10,15 +10,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+
+import {ref, onMounted, watch} from "vue";
 import "./style.css";
 import StatusBar from "./components/StatusBar.vue";
 import ChatBox from "./components/ChatBox.vue";
 import MessageInput from "./components/MessageInput.vue";
 
+
 const messages = ref([]);
 const models = ref([]);
 const selectedModel = ref("");
+
+//watch saved model
+watch(selectedModel, (newModel) => {
+  localStorage.setItem("selectedModel", newModel);
+})
+
+function loadSavedModel() {
+ if (!window.api) return;
+ //return selected model if there is
+ selectedModel.value = localStorage.getItem("selectedModel") || "";
+
+}
 
 async function loadModels() {
   if (!window.api) return;
@@ -26,7 +40,8 @@ async function loadModels() {
     const result = await window.api.getModels();
     if (result.ok) {
       models.value = result.models;
-      if (result.models.length > 0) {
+      if (result.models.length > 0 && !selectedModel.value) {
+        //load the first model in the index if no model is saved
         selectedModel.value = result.models[0];
       }
     } else {
@@ -52,7 +67,11 @@ async function sendMessage(text) {
   }
 }
 
+
 onMounted(() => {
-  loadModels();
+//check saved models muna 
+  loadSavedModel();
+// then load model
+loadModels();
 });
 </script>
