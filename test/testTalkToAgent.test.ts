@@ -23,8 +23,12 @@ describe("Agent startup", () => {
       { role: "user", content: "Hello" },
     ];
     const reply = await chat(messages, "wbridge/glm-5.2");
-    console.log("Agent reply:", reply);
-    expect(typeof reply).toBe("string");
-    expect(reply.length).toBeGreaterThan(0);
+    console.log("Raw reply:", reply);
+    console.log("Agent reply:", reply.content);
+    console.log("Token usage:", reply.usage);
+    expect(typeof reply.content).toBe("string");
+    expect(reply.content.length).toBeGreaterThan(0);
+    expect(reply.usage).toBeDefined();
+    expect(reply.usage.total_tokens).toBeGreaterThan(0);
   }, 30000);
 });

@@ -23,7 +23,7 @@ module.exports = {
       ];
 
       const reply = await chat(messages, model);
-      return { ok: true, reply };
+      return { ok: true, reply: reply.content, usage: reply.usage };
     } catch (err) {
       return { ok: false, error: err.message };
     }

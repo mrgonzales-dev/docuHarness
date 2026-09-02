@@ -18,7 +18,10 @@ async function chat(messages, model) {
     },
   );
 
-  return res.data.choices[0].message.content;
+  return {
+    content: res.data.choices[0].message.content,
+    usage: res.data.usage,
+  };
 }
 
 module.exports = { chat };

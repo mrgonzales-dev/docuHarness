@@ -17,7 +17,6 @@ import StatusBar from "./components/StatusBar.vue";
 import ChatBox from "./components/ChatBox.vue";
 import MessageInput from "./components/MessageInput.vue";
 
-
 const messages = ref([]);
 const models = ref([]);
 const selectedModel = ref("");
@@ -31,7 +30,6 @@ function loadSavedModel() {
  if (!window.api) return;
  //return selected model if there is
  selectedModel.value = localStorage.getItem("selectedModel") || "";
-
 }
 
 async function loadModels() {

@@ -6,6 +6,7 @@
         @keydown.enter.exact.prevent="send"
         placeholder="Type a message..."
       ></textarea>
+      <!-- // press to send the message -->
       <button @click="send">Send</button>
     </div>
   </div>
