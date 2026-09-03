@@ -1,25 +1,30 @@
 <template>
   <div class="side-panel">
-    <div v-if="!folderPath" class="side-panel-empty">
-      No folder selected
+    <div class="panel-tabs">
+      <div class="panel-tab active">Browser</div>
     </div>
-    <div v-else-if="loading" class="side-panel-empty">
-      Loading...
-    </div>
-    <div v-else-if="error" class="side-panel-empty">
-      {{ error }}
-    </div>
-    <div v-else class="folder-entries">
-      <div
-        v-for="entry in entries"
-        :key="entry.name"
-        class="folder-entry"
-        :class="{ selected: entry.name === selectedFile }"
-        @click="selectedFile = entry.name"
-      >
-        <span v-if="entry.isDirectory" class="entry-icon" v-html="folderClosedIcon"></span>
-        <span v-else class="entry-icon" v-html="folderOpenIcon"></span>
-        <span class="entry-name">{{ entry.name }}</span>
+    <div class="panel-content">
+      <div v-if="!folderPath" class="side-panel-empty">
+        No folder selected
+      </div>
+      <div v-else-if="loading" class="side-panel-empty">
+        Loading...
+      </div>
+      <div v-else-if="error" class="side-panel-empty">
+        {{ error }}
+      </div>
+      <div v-else class="folder-entries">
+        <div
+          v-for="entry in entries"
+          :key="entry.name"
+          class="folder-entry"
+          :class="{ selected: entry.name === selectedFile }"
+          @click="selectedFile = entry.name"
+        >
+          <span v-if="entry.isDirectory" class="entry-icon" v-html="folderClosedIcon"></span>
+          <span v-else class="entry-icon" v-html="folderOpenIcon"></span>
+          <span class="entry-name">{{ entry.name }}</span>
+        </div>
       </div>
     </div>
   </div>
