@@ -1,11 +1,14 @@
 <template>
   <div class="statusline">
       
-    <!-- // folder selector button  -->
+    <!-- folder selector -->
     <div class="folder-selector">
-      <button class="folder-btn" @click="$emit('selectFolder')">
-        {{ folderPath || "Select Folder..."}}
-      </button>
+      <div class="folder-display" @click="$emit('selectFolder')">
+        <span class="folder-label">{{ folderPath || "Select Folder..." }}</span>
+        <svg class="folder-icon" width="12" height="12" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 1H5L8 3H13V5H3.7457L2.03141 11H4.11144L5.2543 7H16L14 14H0V1Z"/>
+        </svg>
+      </div>
     </div>
 
     <!-- //drop down for model selector -->
