@@ -1,3 +1,21 @@
+<!--
+  ChatBox.vue
+  Renders the message list. Loops over the messages array and picks
+  the correct component for each message based on the `sender` field.
+
+  Props:
+    - messages: Array of message objects. Each object has a `sender`
+      field that decides which component renders it.
+
+  Sender to component mapping:
+    - "You"                          → UserMessage
+    - "AI"                           → AgentReply
+    - "Thinking"                     → ThinkingReply
+    - "Tool" + tool: "readFile"      → ReadingFileReply
+    - "Tool" + tool: "fileSearch"    → SearchingFileReply
+    - "Tool" + tool: "fileGrep"      → GrepReply
+    - anything else                  → fallback error div
+-->
 <template>
   <div class="div1" id="chat-box">
     <template v-for="(msg, i) in messages" :key="i">
