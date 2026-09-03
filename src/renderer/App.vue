@@ -6,7 +6,7 @@
       :folderPath="folderPath"
       @selectFolder="selectFolder"
     />
-    <FolderPanel :folderPath="folderPath" />
+    <FileBrowserPanel :folderPath="folderPath" />
     <ChatBox :messages="messages" />
     <MessageInput @send="sendMessage" />
   </div>
@@ -19,7 +19,7 @@ import "./style.css";
 import StatusBar from "./components/StatusBar.vue";
 import ChatBox from "./components/ChatBox.vue";
 import MessageInput from "./components/MessageInput.vue";
-import FolderPanel from "./components/FolderPanel.vue";
+import FileBrowserPanel from "./components/FileBrowserPanel.vue";
 
 const messages = ref([]);
 const models = ref([]);
