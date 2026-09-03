@@ -299,6 +299,18 @@ button:hover {
   padding: 8px;
   margin-bottom: 8px;
   border-radius: 6px;
+  display: flex;
+  gap: 8px;
+}
+
+.msg-ai-bullet {
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.msg-ai-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .msg-error {
