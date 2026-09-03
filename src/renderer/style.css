@@ -72,9 +72,12 @@ html, body {
   background-color: var(--bg-secondary);
   color: var(--text-secondary);
   font-size: 12px;
-  padding: 4px 8px;
+  padding-top: 8px;
+  padding-bottom: 8px;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
 }
 
 .div1 {
