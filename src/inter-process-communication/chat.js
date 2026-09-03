@@ -30,6 +30,12 @@ module.exports = {
       }
     };
 
+    const sendToolCall = (tool, args, status) => {
+      if (event.sender && event.sender.send) {
+        event.sender.send("chat:tool", { tool, args, status });
+      }
+    };
+
     try {
       if (history.length === 0) {
         history.push({
@@ -59,19 +65,24 @@ module.exports = {
         // Execute each tool call
         for (const toolCall of reply.toolCalls) {
           const toolName = toolCall.function.name;
-          sendThinking(`Reading ${toolName}`);
+          let args = {};
+          try { args = JSON.parse(toolCall.function.arguments); } catch {}
+
+          sendToolCall(toolName, args, "running");
 
           const fn = toolFunctions[toolName];
           let result;
           if (fn) {
             try {
-              const args = JSON.parse(toolCall.function.arguments);
               result = fn(args);
+              sendToolCall(toolName, args, "done");
             } catch (err) {
               result = `Error: ${err.message}`;
+              sendToolCall(toolName, args, "error");
             }
           } else {
             result = `Error: Unknown tool "${toolName}"`;
+            sendToolCall(toolName, args, "error");
           }
 
           // Add tool result to history

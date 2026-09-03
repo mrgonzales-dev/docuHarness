@@ -9,6 +9,21 @@
         :elapsed="msg.elapsed"
         :tokens="msg.tokens"
       />
+      <ReadingFileReply
+        v-else-if="msg.sender === 'Tool' && msg.tool === 'readFile'"
+        :args="msg.args"
+        :status="msg.status"
+      />
+      <SearchingFileReply
+        v-else-if="msg.sender === 'Tool' && msg.tool === 'fileSearch'"
+        :args="msg.args"
+        :status="msg.status"
+      />
+      <GrepReply
+        v-else-if="msg.sender === 'Tool' && msg.tool === 'fileGrep'"
+        :args="msg.args"
+        :status="msg.status"
+      />
       <div v-else class="msg msg-error">
         {{ msg.sender }}: {{ msg.text }}
       </div>
@@ -20,6 +35,9 @@
 import UserMessage from "./UserMessage.vue";
 import AgentReply from "./AgentReply.vue";
 import ThinkingReply from "./agentReply/ThinkingReply.vue";
+import ReadingFileReply from "./agentReply/ReadingFileReply.vue";
+import SearchingFileReply from "./agentReply/SearchingFileReply.vue";
+import GrepReply from "./agentReply/GrepReply.vue";
 
 defineProps({
   messages: { type: Array, default: () => [] },

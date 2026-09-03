@@ -58,10 +58,12 @@ async function loadModels() {
 async function sendMessage(text) {
   messages.value.push({ sender: "You", text });
 
-  const thinkingId = messages.value.length;
+  let thinkingId = messages.value.length;
   messages.value.push({ sender: "Thinking", text: "Thinking", elapsed: 0, tokens: 0 });
 
-  let removeListener = null;
+  let removeThinking = null;
+  let removeTool = null;
+
   const onThinking = (data) => {
     if (messages.value[thinkingId]?.sender !== "Thinking") return;
     messages.value[thinkingId] = {
@@ -72,8 +74,28 @@ async function sendMessage(text) {
     };
   };
 
+  const onToolCall = (data) => {
+    const existing = messages.value.findIndex(
+      (m) => m.sender === "Tool" && m.tool === data.tool && JSON.stringify(m.args) === JSON.stringify(data.args)
+    );
+    if (existing >= 0) {
+      messages.value[existing].status = data.status;
+    } else {
+      messages.value.splice(thinkingId, 0, {
+        sender: "Tool",
+        tool: data.tool,
+        args: data.args,
+        status: data.status,
+      });
+      thinkingId++;
+    }
+  };
+
   if (window.api.onThinking) {
-    removeListener = window.api.onThinking(onThinking);
+    removeThinking = window.api.onThinking(onThinking);
+  }
+  if (window.api.onToolCall) {
+    removeTool = window.api.onToolCall(onToolCall);
   }
 
   try {
@@ -88,7 +110,8 @@ async function sendMessage(text) {
   } catch (err) {
     messages.value[thinkingId] = { sender: "Error", text: err.message };
   } finally {
-    if (removeListener) removeListener();
+    if (removeThinking) removeThinking();
+    if (removeTool) removeTool();
   }
 }
 

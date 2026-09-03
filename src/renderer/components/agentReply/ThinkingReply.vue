@@ -62,13 +62,14 @@ function formatTokens(n) {
   border-radius: 50%;
   background-color: var(--accent);
   flex-shrink: 0;
-  animation: spin 1s linear infinite;
+  display: inline-block;
+  animation: spin 1s ease-in-out infinite;
 }
 
 @keyframes spin {
-  0% { opacity: 0.3; }
-  50% { opacity: 1; }
-  100% { opacity: 0.3; }
+  0% { transform: scale(0.6); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(0.6); }
 }
 
 .thinking-text {

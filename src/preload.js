@@ -12,6 +12,11 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.on("chat:thinking", listener);
     return () => ipcRenderer.removeListener("chat:thinking", listener);
   },
+  onToolCall: (callback) => {
+    const listener = (_e, data) => callback(data);
+    ipcRenderer.on("chat:tool", listener);
+    return () => ipcRenderer.removeListener("chat:tool", listener);
+  },
   getModels: () => ipcRenderer.invoke("get-models"),
   selectFolder: () => ipcRenderer.invoke("dialog:openFolder"),
   readFolderContents: (path) => ipcRenderer.invoke("folder:readContents", path),
