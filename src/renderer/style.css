@@ -287,13 +287,18 @@ button:hover {
 }
 
 .msg-user {
-  background-color: var(--user-bubble-bg);
-  color: var(--user-bubble-text);
+  background-color: var(--bg-tertiary);
+  color: var(--text);
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 0;
 }
 
 .msg-ai {
-  background-color: var(--ai-bubble-bg);
   color: var(--ai-bubble-text);
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 6px;
 }
 
 .msg-error {

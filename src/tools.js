@@ -6,7 +6,13 @@ const axios = require("axios");
  * @param {string} filePath - The path to the file to read.
  * @returns {string} The file content.
  */
-function readFile(filePath) {}
+function readFile(filePath) {
+  const stat = fs.statSync(filePath);
+  if (stat.isDirectory()) {
+    throw new Error(`Path is a directory, not a file: ${filePath}`);
+  }
+  return fs.readFileSync(filePath, "utf-8");
+}
 
 /**
  * Format a list of changes as a unified diff string.
