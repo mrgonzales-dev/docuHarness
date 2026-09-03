@@ -3,6 +3,8 @@
     <StatusBar
       :models="models"
       v-model:selectedModel="selectedModel"
+      :folderPath="folderPath"
+      @selectFolder="selectFolder"
     />
     <ChatBox :messages="messages" />
     <MessageInput @send="sendMessage" />

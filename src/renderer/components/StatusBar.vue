@@ -1,5 +1,14 @@
 <template>
   <div class="statusline">
+      
+    <!-- // folder selector button  -->
+    <div class="folder-selector">
+      <button class="folder-btn" @click="$emit('selectFolder')">
+        {{ folderPath || "Select Folder..."}}
+      </button>
+    </div>
+
+    <!-- //drop down for model selector -->
     <div class="model-dropdown">
       <div class="model-display" @click="toggleDropdown">
         {{ selectedModel || "Select a model..." }}
@@ -39,9 +48,10 @@ import { ref, computed, nextTick } from "vue";
 const props = defineProps({
   models: { type: Array, default: () => [] },
   selectedModel: { type: String, default: "" },
+  folderPath: { type: String, default: "" },
 });
 
-const emit = defineEmits(["update:selectedModel"]);
+const emit = defineEmits(["update:selectedModel", "selectFolder"]);
 
 const dropdownOpen = ref(false);
 const searchQuery = ref("");
