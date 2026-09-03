@@ -58,17 +58,37 @@ async function loadModels() {
 async function sendMessage(text) {
   messages.value.push({ sender: "You", text });
 
+  const thinkingId = messages.value.length;
+  messages.value.push({ sender: "Thinking", text: "Thinking", elapsed: 0, tokens: 0 });
+
+  let removeListener = null;
+  const onThinking = (data) => {
+    if (messages.value[thinkingId]?.sender !== "Thinking") return;
+    messages.value[thinkingId] = {
+      sender: "Thinking",
+      text: data.text,
+      elapsed: data.elapsed,
+      tokens: data.tokens,
+    };
+  };
+
+  if (window.api.onThinking) {
+    removeListener = window.api.onThinking(onThinking);
+  }
+
   try {
-    const result = await window.api.chat(text, 
+    const result = await window.api.chat(text,
     selectedModel.value,
     folderPath.value);
     if (result.ok) {
-      messages.value.push({ sender: "AI", text: result.reply });
+      messages.value[thinkingId] = { sender: "AI", text: result.reply };
     } else {
-      messages.value.push({ sender: "Error", text: result.error });
+      messages.value[thinkingId] = { sender: "Error", text: result.error };
     }
   } catch (err) {
-    messages.value.push({ sender: "Error", text: err.message });
+    messages.value[thinkingId] = { sender: "Error", text: err.message };
+  } finally {
+    if (removeListener) removeListener();
   }
 }
 

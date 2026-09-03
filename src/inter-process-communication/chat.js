@@ -19,6 +19,17 @@ function clearHistory() {
 module.exports = {
   name: "chat",
   handler: async (event, { message, model, folderPath }) => {
+    const startTime = Date.now();
+    let totalTokens = 0;
+
+    const sendThinking = (text) => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const tokens = totalTokens;
+      if (event.sender && event.sender.send) {
+        event.sender.send("chat:thinking", { text, elapsed, tokens });
+      }
+    };
+
     try {
       if (history.length === 0) {
         history.push({
@@ -29,24 +40,16 @@ module.exports = {
 
       history.push({ role: "user", content: message });
 
-      // reply is the object returned by chat():
-      // {
-      //   content: "Here is what the file says...",  // AI's text (null if tool_calls only)
-      //   toolCalls: [                               // empty array if no tool calls
-      //     {
-      //       id: "call_abc123",
-      //       type: "function",
-      //       function: {
-      //         name: "readFile",
-      //         arguments: "{\"filePath\": \"/home/user/doc.txt\"}"
-      //       }
-      //     }
-      //   ],
-      //   usage: { total_tokens: 50 }
-      // }
+      sendThinking("Thinking");
+
       let reply = await chat(history, model, { tools: toolDefinitions });
+      if (reply.usage) totalTokens += reply.usage.total_tokens || 0;
 
       while (reply.toolCalls && reply.toolCalls.length > 0) {
+        if (reply.content) {
+          sendThinking(reply.content);
+        }
+
         history.push({
           role: "assistant",
           content: reply.content || "",
@@ -55,7 +58,10 @@ module.exports = {
 
         // Execute each tool call
         for (const toolCall of reply.toolCalls) {
-          const fn = toolFunctions[toolCall.function.name];
+          const toolName = toolCall.function.name;
+          sendThinking(`Reading ${toolName}`);
+
+          const fn = toolFunctions[toolName];
           let result;
           if (fn) {
             try {
@@ -65,7 +71,7 @@ module.exports = {
               result = `Error: ${err.message}`;
             }
           } else {
-            result = `Error: Unknown tool "${toolCall.function.name}"`;
+            result = `Error: Unknown tool "${toolName}"`;
           }
 
           // Add tool result to history
@@ -77,7 +83,9 @@ module.exports = {
         }
 
         // Send tool results back to AI
+        sendThinking("Thinking");
         reply = await chat(history, model, { tools: toolDefinitions });
+        if (reply.usage) totalTokens += reply.usage.total_tokens || 0;
       }
 
       history.push({ role: "assistant", content: reply.content });
