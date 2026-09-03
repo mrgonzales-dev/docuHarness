@@ -75,6 +75,8 @@ async function sendMessage(text) {
   };
 
   const handleToolCall = (data) => {
+    // find tools if kasama sa index 0+, fck this was hard to understand
+
     const existing = messages.value.findIndex(
       (m) => m.sender === "Tool" && m.tool === data.tool && JSON.stringify(m.args) === JSON.stringify(data.args)
     );
