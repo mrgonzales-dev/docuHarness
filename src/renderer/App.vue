@@ -61,10 +61,10 @@ async function sendMessage(text) {
   let thinkingId = messages.value.length;
   messages.value.push({ sender: "Thinking", text: "Thinking", elapsed: 0, tokens: 0 });
 
-  let removeThinking = null;
-  let removeTool = null;
+  let stopThinkingListener = null;
+  let stopToolListener = null;
 
-  const onThinking = (data) => {
+  const handleThinking = (data) => {
     if (messages.value[thinkingId]?.sender !== "Thinking") return;
     messages.value[thinkingId] = {
       sender: "Thinking",
@@ -74,7 +74,7 @@ async function sendMessage(text) {
     };
   };
 
-  const onToolCall = (data) => {
+  const handleToolCall = (data) => {
     const existing = messages.value.findIndex(
       (m) => m.sender === "Tool" && m.tool === data.tool && JSON.stringify(m.args) === JSON.stringify(data.args)
     );
@@ -92,10 +92,10 @@ async function sendMessage(text) {
   };
 
   if (window.api.onThinking) {
-    removeThinking = window.api.onThinking(onThinking);
+    stopThinkingListener = window.api.onThinking(handleThinking);
   }
   if (window.api.onToolCall) {
-    removeTool = window.api.onToolCall(onToolCall);
+    stopToolListener = window.api.onToolCall(handleToolCall);
   }
 
   try {
@@ -110,8 +110,8 @@ async function sendMessage(text) {
   } catch (err) {
     messages.value[thinkingId] = { sender: "Error", text: err.message };
   } finally {
-    if (removeThinking) removeThinking();
-    if (removeTool) removeTool();
+    if (stopThinkingListener) stopThinkingListener();
+    if (stopToolListener) stopToolListener();
   }
 }
 
