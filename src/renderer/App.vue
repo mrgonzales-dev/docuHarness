@@ -21,6 +21,7 @@ import MessageInput from "./components/MessageInput.vue";
 
 const messages = ref([]);
 const models = ref([]);
+const folderPath = ref("");
 const selectedModel = ref("");
 
 //watch saved model
@@ -67,6 +68,16 @@ async function sendMessage(text) {
   }
 }
 
+
+async function selectFolder() {
+  if (!window.api) return;
+  const result = await window.api.selectFolder();
+  if (result.ok) {
+    folderPath.value = result.path;
+  } else {
+    console.error("Folder selection failed:", result.error);
+  }
+}
 
 onMounted(() => {
 //check saved models muna 
