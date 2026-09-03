@@ -3,7 +3,7 @@
     <span class="thinking-spinner"></span>
     <span class="thinking-text">{{ text }}…</span>
     <span class="thinking-meta">
-      (↓ · {{ localElapsed }}s · {{ formatTokens(tokens) }} · thinking with high effort)
+      (↓ · {{ localElapsed }}s · {{ formatTokens(tokens) }})
     </span>
   </div>
 </template>
