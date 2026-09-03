@@ -114,13 +114,18 @@ html, body {
   font-size: 12px;
   padding: 2px 6px;
   cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 4px;
+}
+
+.folder-label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .folder-display:hover {
