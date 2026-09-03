@@ -5,9 +5,8 @@
     <div class="folder-selector">
       <div class="folder-display" @click="$emit('selectFolder')">
         <span class="folder-label">{{ folderPath || "Select Folder..." }}</span>
-        <svg class="folder-icon" width="12" height="12" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0 1H5L8 3H13V5H3.7457L2.03141 11H4.11144L5.2543 7H16L14 14H0V1Z"/>
-        </svg>
+        <span v-if="folderPath" class="folder-icon" v-html="folderOpenIcon"></span>
+        <span v-else class="folder-icon" v-html="folderClosedIcon"></span>
       </div>
     </div>
 
@@ -47,6 +46,8 @@
 
 <script setup>
 import { ref, computed, nextTick } from "vue";
+import folderOpenIcon from "../../icons/folder-open-icon.svg?raw";
+import folderClosedIcon from "../../icons/folder-open-closed.svg?raw";
 
 const props = defineProps({
   models: { type: Array, default: () => [] },

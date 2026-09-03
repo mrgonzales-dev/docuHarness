@@ -7,8 +7,9 @@ const { ipcMain } = require("electron");
 const chat = require("./chat");
 const models = require("./models");
 const dialog = require("./dialog");
+const folder = require("./folder");
 
-const handlers = [chat, models, dialog];
+const handlers = [chat, models, dialog, folder];
 
 function registerIpcHandlers() {
   for (const { name, handler } of handlers) {
