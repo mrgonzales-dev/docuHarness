@@ -59,7 +59,9 @@ async function sendMessage(text) {
   messages.value.push({ sender: "You", text });
 
   try {
-    const result = await window.api.chat(text, selectedModel.value);
+    const result = await window.api.chat(text, 
+    selectedModel.value,
+    folderPath.value);
     if (result.ok) {
       messages.value.push({ sender: "AI", text: result.reply });
     } else {

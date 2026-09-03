@@ -18,13 +18,12 @@ function clearHistory() {
 
 module.exports = {
   name: "chat",
-  handler: async (event, { message, model }) => {
+  handler: async (event, { message, model, folderPath }) => {
     try {
       if (history.length === 0) {
         history.push({
           role: "system",
-          content:
-            "You are a documentation assistant. You help users find and read documentation.",
+          content: `You are a documentation assistant. You help users find and read documentation. The user's working directory is: ${folderPath || "not set"}. Use this as basePath when calling fileSearch or fileGrep.`,
         });
       }
 
