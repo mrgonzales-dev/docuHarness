@@ -14,17 +14,16 @@
         {{ error }}
       </div>
       <div v-else class="folder-entries">
-        <div
+        <FileBrowserEntry
           v-for="entry in entries"
           :key="entry.name"
-          class="folder-entry"
-          :class="{ selected: entry.name === selectedFile }"
-          @click="selectedFile = entry.name"
-        >
-          <span v-if="entry.isDirectory" class="entry-icon" v-html="folderClosedIcon"></span>
-          <span v-else class="entry-icon" v-html="fileIcon"></span>
-          <span class="entry-name">{{ entry.name }}</span>
-        </div>
+          :entry="entry"
+          :depth="0"
+          :basePath="folderPath"
+          :selectedFile="selectedFile"
+          @select="selectedFile = $event"
+          @toggle="toggleEntry"
+        />
       </div>
     </div>
   </div>
@@ -32,9 +31,7 @@
 
 <script setup>
 import { ref, watch } from "vue";
-import folderOpenIcon from "../../icons/folder-open-icon.svg?raw";
-import folderClosedIcon from "../../icons/folder-open-closed.svg?raw";
-import fileIcon from "../../icons/file-icon.svg?raw";
+import FileBrowserEntry from "./FileBrowserEntry.vue";
 
 const props = defineProps({
   folderPath: { type: String, default: "" },
@@ -56,7 +53,13 @@ async function loadContents() {
   try {
     const result = await window.api.readFolderContents(props.folderPath);
     if (result.ok) {
-      entries.value = result.entries;
+      entries.value = result.entries.map((e) => ({
+        name: e.name,
+        isDirectory: e.isDirectory,
+        expanded: false,
+        children: [],
+        loaded: false,
+      }));
     } else {
       error.value = result.error;
     }
@@ -66,5 +69,80 @@ async function loadContents() {
   loading.value = false;
 }
 
+async function toggleEntry({ entry, path }) {
+  entry.expanded = !entry.expanded;
+
+  if (entry.expanded && !entry.loaded) {
+    try {
+      const result = await window.api.readFolderContents(path);
+      if (result.ok) {
+        entry.children = result.entries.map((e) => ({
+          name: e.name,
+          isDirectory: e.isDirectory,
+          expanded: false,
+          children: [],
+          loaded: false,
+        }));
+        entry.loaded = true;
+      }
+    } catch {
+      entry.children = [];
+    }
+  }
+}
+
 watch(() => props.folderPath, loadContents, { immediate: true });
 </script>
+
+<style scoped>
+.side-panel {
+  grid-row: 1 / -1;
+  grid-column: 1;
+  border: 1px solid var(--border);
+  background-color: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.panel-tab {
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+}
+
+.panel-tab.active {
+  color: var(--text);
+}
+
+.panel-content {
+  overflow-y: auto;
+  padding: 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.side-panel-empty {
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: center;
+  padding: 16px 4px;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.folder-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+</style>
