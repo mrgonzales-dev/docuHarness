@@ -57,7 +57,7 @@ html, body {
 .parent {
   display: grid;
   grid-template-columns: 200px 1fr;
-  grid-template-rows: 24px 1fr auto;
+  grid-template-rows: 24px 1fr 24px auto;
   gap: 8px;
   height: 100vh;
   padding: 8px;
@@ -91,7 +91,7 @@ html, body {
 }
 
 .div2 {
-  grid-row-start: 3;
+  grid-row-start: 4;
   grid-column: 2;
   border: 1px solid var(--border);
   background-color: var(--bg-secondary);

@@ -8,6 +8,7 @@
     />
     <FileBrowserPanel :folderPath="folderPath" />
     <ChatBox :messages="messages" :queue="queue" :isResponding="isResponding" @sendQueue="flushQueue" />
+    <QuickPromptActionToolBar />
     <MessageInput @send="handleSend" @sendQueue="flushQueue" />
   </div>
 </template>
@@ -20,6 +21,7 @@ import StatusBar from "./components/StatusBar.vue";
 import ChatBox from "./components/ChatBox.vue";
 import MessageInput from "./components/MessageInput.vue";
 import FileBrowserPanel from "./components/FileBrowserPanel.vue";
+import QuickPromptActionToolBar from "./components/QuickPromptActionToolBar.vue";
 
 const messages = ref([]);
 const models = ref([]);
