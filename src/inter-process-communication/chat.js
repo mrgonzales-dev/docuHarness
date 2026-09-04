@@ -43,9 +43,22 @@ module.exports = {
 
     try {
       if (history.length === 0) {
+        const systemPrompt = JSON.stringify({
+          role: "You are an agentic coding assistant. You help engineers plan and build software.",
+          system_setup: {
+            working_directory: folderPath || "not set",
+            instructions: "Use the working directory as basePath when calling fileSearch or fileGrep.",
+          },
+          tools: toolDefinitions.map((t) => ({
+            name: t.function.name,
+            description: t.function.description,
+            parameters: t.function.parameters,
+          })),
+        });
+
         history.push({
           role: "system",
-          content: `You are a documentation assistant. You help users find and read documentation. The user's working directory is: ${folderPath || "not set"}. Use this as basePath when calling fileSearch or fileGrep.`,
+          content: systemPrompt,
         });
       }
 
@@ -62,7 +75,12 @@ module.exports = {
 
       sendThinking(currentThinkingText);
 
-      let reply = await chat(history, model, { tools: toolDefinitions }, onProgress);
+      let reply = await chat(
+        history,
+        model,
+        { tools: toolDefinitions },
+        onProgress,
+      );
 
       while (reply.toolCalls && reply.toolCalls.length > 0) {
         history.push({
@@ -75,7 +93,9 @@ module.exports = {
         for (const toolCall of reply.toolCalls) {
           const toolName = toolCall.function.name;
           let args = {};
-          try { args = JSON.parse(toolCall.function.arguments); } catch {}
+          try {
+            args = JSON.parse(toolCall.function.arguments);
+          } catch {}
 
           sendToolCall(toolName, args, "running");
 
@@ -105,7 +125,12 @@ module.exports = {
         // Send tool results back to AI
         currentThinkingText = randomThinkingText();
         sendThinking(currentThinkingText);
-        reply = await chat(history, model, { tools: toolDefinitions }, onProgress);
+        reply = await chat(
+          history,
+          model,
+          { tools: toolDefinitions },
+          onProgress,
+        );
       }
 
       history.push({ role: "assistant", content: reply.content });
