@@ -9,11 +9,16 @@
  */
 const { chat } = require("../ai-bridge");
 const { toolDefinitions, toolFunctions } = require("../tools");
+const thinkingTexts = require("../thinking-texts");
 
 let history = [];
 
 function clearHistory() {
   history = [];
+}
+
+function randomThinkingText() {
+  return thinkingTexts[Math.floor(Math.random() * thinkingTexts.length)];
 }
 
 module.exports = {
@@ -46,16 +51,20 @@ module.exports = {
 
       history.push({ role: "user", content: message });
 
-      sendThinking("Thinking");
+      let currentThinkingText = randomThinkingText();
 
-      let reply = await chat(history, model, { tools: toolDefinitions });
-      if (reply.usage) totalTokens += reply.usage.total_tokens || 0;
+      const onProgress = (progress) => {
+        if (progress.usage) {
+          totalTokens = progress.usage.total_tokens || totalTokens;
+        }
+        sendThinking(currentThinkingText);
+      };
+
+      sendThinking(currentThinkingText);
+
+      let reply = await chat(history, model, { tools: toolDefinitions }, onProgress);
 
       while (reply.toolCalls && reply.toolCalls.length > 0) {
-        if (reply.content) {
-          sendThinking(reply.content);
-        }
-
         history.push({
           role: "assistant",
           content: reply.content || "",
@@ -94,9 +103,9 @@ module.exports = {
         }
 
         // Send tool results back to AI
-        sendThinking("Thinking");
-        reply = await chat(history, model, { tools: toolDefinitions });
-        if (reply.usage) totalTokens += reply.usage.total_tokens || 0;
+        currentThinkingText = randomThinkingText();
+        sendThinking(currentThinkingText);
+        reply = await chat(history, model, { tools: toolDefinitions }, onProgress);
       }
 
       history.push({ role: "assistant", content: reply.content });
