@@ -38,4 +38,5 @@ contextBridge.exposeInMainWorld("api", {
   getModels: () => ipcRenderer.invoke("get-models"),
   selectFolder: () => ipcRenderer.invoke("dialog:openFolder"),
   readFolderContents: (path) => ipcRenderer.invoke("folder:readContents", path),
+  interruptChat: () => ipcRenderer.invoke("chat:interrupt"),
 });

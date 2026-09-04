@@ -15,6 +15,7 @@ function registerIpcHandlers() {
   for (const { name, handler } of handlers) {
     ipcMain.handle(name, handler);
   }
+  ipcMain.handle("chat:interrupt", chat.interrupt);
 }
 
 module.exports = { registerIpcHandlers };

@@ -7,7 +7,7 @@ const { loadConfig } = require("../config.js");
  * Calls onProgress({ content, toolCalls, usage }) as chunks arrive
  * so the caller can update the UI in real time.
  */
-async function chat(messages, model, options = {}, onProgress) {
+async function chat(messages, model, options = {}, onProgress, signal) {
   const { host, apiKey } = loadConfig();
 
   const body = {
@@ -27,6 +27,7 @@ async function chat(messages, model, options = {}, onProgress) {
       Authorization: `Bearer ${apiKey}`,
     },
     responseType: "stream",
+    signal,
   });
 
   let content = "";
@@ -36,6 +37,19 @@ async function chat(messages, model, options = {}, onProgress) {
   const lineBuffer = { data: "" };
 
   await new Promise((resolve, reject) => {
+    if (signal && signal.aborted) {
+      response.data.destroy();
+      reject(new Error("Aborted"));
+      return;
+    }
+
+    if (signal) {
+      signal.addEventListener("abort", () => {
+        response.data.destroy();
+        reject(new Error("Aborted"));
+      });
+    }
+
     response.data.on("data", (chunk) => {
       lineBuffer.data += chunk.toString();
       const lines = lineBuffer.data.split("\n");

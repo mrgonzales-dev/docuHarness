@@ -7,8 +7,8 @@
       @selectFolder="selectFolder"
     />
     <FileBrowserPanel :folderPath="folderPath" />
-    <ChatBox :messages="messages" />
-    <MessageInput @send="sendMessage" />
+    <ChatBox :messages="messages" :queue="queue" :isResponding="isResponding" @sendQueue="flushQueue" />
+    <MessageInput @send="handleSend" @sendQueue="flushQueue" />
   </div>
 </template>
 
@@ -25,6 +25,8 @@ const messages = ref([]);
 const models = ref([]);
 const folderPath = ref("");
 const selectedModel = ref("");
+const queue = ref([]);
+const isResponding = ref(false);
 
 //watch saved model
 watch(selectedModel, (newModel) => {
@@ -55,7 +57,26 @@ async function loadModels() {
   }
 }
 
+function handleSend(text) {
+  if (isResponding.value) {
+    queue.value.push(text);
+    return;
+  }
+  sendMessage(text);
+}
+
+function flushQueue() {
+  if (queue.value.length === 0) return;
+  if (isResponding.value) {
+    if (window.api.interruptChat) window.api.interruptChat();
+    return;
+  }
+  const next = queue.value.shift();
+  sendMessage(next);
+}
+
 async function sendMessage(text) {
+  isResponding.value = true;
   messages.value.push({ sender: "You", text });
 
   let thinkingId = messages.value.length;
@@ -114,6 +135,11 @@ async function sendMessage(text) {
   } finally {
     if (stopThinkingListener) stopThinkingListener();
     if (stopToolListener) stopToolListener();
+    isResponding.value = false;
+    if (queue.value.length > 0) {
+      const next = queue.value.shift();
+      sendMessage(next);
+    }
   }
 }
 

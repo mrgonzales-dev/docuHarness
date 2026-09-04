@@ -12,6 +12,7 @@ const { toolDefinitions, toolFunctions } = require("../tools");
 const thinkingTexts = require("../thinking-texts");
 
 let history = [];
+let currentAbortController = null;
 
 function clearHistory() {
   history = [];
@@ -26,6 +27,9 @@ module.exports = {
   handler: async (event, { message, model, folderPath }) => {
     const startTime = Date.now();
     let totalTokens = 0;
+
+    currentAbortController = new AbortController();
+    const signal = currentAbortController.signal;
 
     const sendThinking = (text) => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -80,6 +84,7 @@ module.exports = {
         model,
         { tools: toolDefinitions },
         onProgress,
+        signal,
       );
 
       while (reply.toolCalls && reply.toolCalls.length > 0) {
@@ -130,6 +135,7 @@ module.exports = {
           model,
           { tools: toolDefinitions },
           onProgress,
+          signal,
         );
       }
 
@@ -137,7 +143,17 @@ module.exports = {
 
       return { ok: true, reply: reply.content, usage: reply.usage };
     } catch (err) {
+      if (err.message === "Aborted") {
+        return { ok: false, error: "Interrupted" };
+      }
       return { ok: false, error: err.message };
+    } finally {
+      currentAbortController = null;
+    }
+  },
+  interrupt: () => {
+    if (currentAbortController) {
+      currentAbortController.abort();
     }
   },
   clearHistory,

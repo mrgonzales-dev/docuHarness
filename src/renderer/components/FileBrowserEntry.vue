@@ -14,7 +14,8 @@
       ></span>
       <span v-else class="entry-arrow-placeholder"></span>
 
-      <span v-if="entry.isDirectory" class="entry-icon" v-html="folderClosedIcon"></span>
+      <span v-if="entry.isDirectory && entry.expanded" class="entry-icon" v-html="folderOpenIcon"></span>
+      <span v-else-if="entry.isDirectory" class="entry-icon" v-html="folderClosedIcon"></span>
       <span v-else class="entry-icon" v-html="fileIcon"></span>
 
       <span class="entry-name">{{ entry.name }}</span>
@@ -38,6 +39,7 @@
 <script setup>
 import { computed } from "vue";
 import arrowIcon from "../../icons/arrow-icon.svg?raw";
+import folderOpenIcon from "../../icons/folder-open-icon.svg?raw";
 import folderClosedIcon from "../../icons/folder-open-closed.svg?raw";
 import fileIcon from "../../icons/file-icon.svg?raw";
 

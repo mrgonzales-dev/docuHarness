@@ -6,7 +6,6 @@
         @keydown.enter.exact.prevent="send"
         placeholder="Type a message..."
       ></textarea>
-      <!-- // press to send the message -->
       <button @click="send">Send</button>
     </div>
   </div>
@@ -15,13 +14,16 @@
 <script setup>
 import { ref } from "vue";
 
-const emit = defineEmits(["send"]);
+const emit = defineEmits(["send", "sendQueue"]);
 
 const text = ref("");
 
 function send() {
   const value = text.value.trim();
-  if (!value) return;
+  if (!value) {
+    emit("sendQueue");
+    return;
+  }
   emit("send", value);
   text.value = "";
 }

@@ -125,6 +125,16 @@ async function webFetch(url) {}
  */
 function stripHtml(html) {}
 
+/**
+ * Check if the skills directory has any skill folders with skill.md files.
+ * @returns {boolean} True if at least one skill is available.
+ */
+function hasSkills() {
+  if (!fs.existsSync(skillsDir)) return false;
+  const entries = fs.readdirSync(skillsDir, { withFileTypes: true });
+  return entries.some((e) => e.isDirectory() && fs.existsSync(path.join(skillsDir, e.name, "skill.md")));
+}
+
 // Tool definitions sent to the AI
 const toolDefinitions = [
   {
@@ -174,7 +184,11 @@ const toolDefinitions = [
       },
     },
   },
-  {
+];
+
+// Only include invokeSkill if skills are available
+if (hasSkills()) {
+  toolDefinitions.push({
     type: "function",
     function: {
       name: "invokeSkill",
@@ -190,8 +204,8 @@ const toolDefinitions = [
         required: [],
       },
     },
-  },
-];
+  });
+}
 
 // Map tool names to functions
 const toolFunctions = {
@@ -210,4 +224,5 @@ module.exports = {
   webFetch,
   toolDefinitions,
   toolFunctions,
+  hasSkills,
 };
