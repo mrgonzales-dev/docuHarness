@@ -14,6 +14,8 @@
     - "Tool" + tool: "readFile"      → ReadingFileReply
     - "Tool" + tool: "fileSearch"    → SearchingFileReply
     - "Tool" + tool: "fileGrep"      → GrepReply
+    - "Tool" + tool: "invokeSkill"   → InvokeSkillReply
+    - "Tool" + tool: "listDirectory" → ListDirectoryReply
     - anything else                  → fallback error div
 -->
 <template>
@@ -48,6 +50,11 @@
           :args="msg.args"
           :status="msg.status"
         />
+        <ListDirectoryReply
+          v-else-if="msg.sender === 'Tool' && msg.tool === 'listDirectory'"
+          :args="msg.args"
+          :status="msg.status"
+        />
         <div v-else class="msg msg-error">
           {{ msg.sender }}: {{ msg.text }}
         </div>
@@ -71,6 +78,7 @@ import ReadingFileReply from "./agentReply/ReadingFileReply.vue";
 import SearchingFileReply from "./agentReply/SearchingFileReply.vue";
 import GrepReply from "./agentReply/GrepReply.vue";
 import InvokeSkillReply from "./agentReply/InvokeSkillReply.vue";
+import ListDirectoryReply from "./agentReply/ListDirectoryReply.vue";
 import QueueBar from "./QueueBar.vue";
 
 const props = defineProps({

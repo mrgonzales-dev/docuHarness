@@ -135,6 +135,34 @@ function hasSkills() {
   return entries.some((e) => e.isDirectory() && fs.existsSync(path.join(skillsDir, e.name, "skill.md")));
 }
 
+/**
+ * List files and folders in a directory, mimicking ls.
+ * Filters hidden files. Sorts folders first, then files alphabetically.
+ * @param {string} [dirPath] - The directory to list. Defaults to cwd.
+ * @returns {string} JSON array of { name, type } entries.
+ */
+function listDirectory({ dirPath } = {}) {
+  const target = dirPath || process.cwd();
+  const entries = fs.readdirSync(target, { withFileTypes: true });
+
+  const dirs = [];
+  const files = [];
+
+  for (const entry of entries) {
+    if (entry.name.startsWith(".")) continue;
+    if (entry.isDirectory()) {
+      dirs.push({ name: entry.name, type: "dir" });
+    } else {
+      files.push({ name: entry.name, type: "file" });
+    }
+  }
+
+  dirs.sort((a, b) => a.name.localeCompare(b.name));
+  files.sort((a, b) => a.name.localeCompare(b.name));
+
+  return JSON.stringify([...dirs, ...files], null, 2);
+}
+
 // Tool definitions sent to the AI
 const toolDefinitions = [
   {
@@ -184,6 +212,23 @@ const toolDefinitions = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "listDirectory",
+      description: "List files and folders in a directory. Returns entries with type (dir/file), folders first. Filters hidden files.",
+      parameters: {
+        type: "object",
+        properties: {
+          dirPath: {
+            type: "string",
+            description: "The directory path to list. Defaults to the working directory if omitted.",
+          },
+        },
+        required: [],
+      },
+    },
+  },
 ];
 
 // Only include invokeSkill if skills are available
@@ -213,6 +258,7 @@ const toolFunctions = {
   fileSearch,
   fileGrep,
   invokeSkill,
+  listDirectory,
 };
 
 module.exports = {
@@ -220,6 +266,7 @@ module.exports = {
   fileSearch,
   fileGrep,
   invokeSkill,
+  listDirectory,
   writeDiff,
   webFetch,
   toolDefinitions,
