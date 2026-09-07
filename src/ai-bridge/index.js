@@ -7,10 +7,10 @@ const { loadConfig } = require("../config.js");
  * Calls onProgress({ content, toolCalls, usage }) as chunks arrive
  * so the caller can update the UI in real time.
  */
-async function chat(messages, model, options = {}, onProgress, signal) {
+async function chat(messages, model, options = {}, onProgress, abortSignal) {
   const { host, apiKey } = loadConfig();
 
-  const body = {
+  const requestBody = {
     model,
     messages,
     stream: true,
@@ -18,89 +18,91 @@ async function chat(messages, model, options = {}, onProgress, signal) {
   };
 
   if (options.tools) {
-    body.tools = options.tools;
+    requestBody.tools = options.tools;
   }
 
-  const response = await axios.post(`${host}/chat/completions`, body, {
+  const response = await axios.post(`${host}/chat/completions`, requestBody, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
     responseType: "stream",
-    signal,
+    signal: abortSignal,
   });
 
-  let content = "";
-  let usage = null;
+  let accumulatedContent = "";
+  let tokenUsage = null;
   const toolCallMap = new Map();
 
-  const lineBuffer = { data: "" };
+  const sseBuffer = { data: "" };
 
   await new Promise((resolve, reject) => {
-    if (signal && signal.aborted) {
+    if (abortSignal && abortSignal.aborted) {
       response.data.destroy();
       reject(new Error("Aborted"));
       return;
     }
 
-    if (signal) {
-      signal.addEventListener("abort", () => {
+    if (abortSignal) {
+      abortSignal.addEventListener("abort", () => {
         response.data.destroy();
         reject(new Error("Aborted"));
       });
     }
 
     response.data.on("data", (chunk) => {
-      lineBuffer.data += chunk.toString();
-      const lines = lineBuffer.data.split("\n");
-      lineBuffer.data = lines.pop();
+      sseBuffer.data += chunk.toString();
+      const lines = sseBuffer.data.split("\n");
+      sseBuffer.data = lines.pop();
 
       for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || !trimmed.startsWith("data:")) continue;
-        const jsonStr = trimmed.slice(5).trim();
-        if (jsonStr === "[DONE]") continue;
+        const trimmedLine = line.trim();
+        if (!trimmedLine || !trimmedLine.startsWith("data:")) continue;
+        const jsonString = trimmedLine.slice(5).trim();
+        if (jsonString === "[DONE]") continue;
 
-        let parsed;
+        let parsedEvent;
         try {
-          parsed = JSON.parse(jsonStr);
+          parsedEvent = JSON.parse(jsonString);
         } catch {
           continue;
         }
 
-        if (parsed.usage) {
-          usage = parsed.usage;
+        if (parsedEvent.usage) {
+          tokenUsage = parsedEvent.usage;
         }
 
-        const delta = parsed.choices?.[0]?.delta;
+        const delta = parsedEvent.choices?.[0]?.delta;
 
         if (delta) {
           if (delta.content) {
-            content += delta.content;
+            accumulatedContent += delta.content;
           }
-
           if (delta.tool_calls) {
-            for (const tc of delta.tool_calls) {
-              const idx = tc.index ?? 0;
-              if (!toolCallMap.has(idx)) {
-                toolCallMap.set(idx, {
-                  id: tc.id || "",
+            for (const toolCallDelta of delta.tool_calls) {
+              const toolCallIndex = toolCallDelta.index ?? 0;
+              if (!toolCallMap.has(toolCallIndex)) {
+                toolCallMap.set(toolCallIndex, {
+                  id: toolCallDelta.id || "",
                   function: { name: "", arguments: "" },
                 });
               }
-              const entry = toolCallMap.get(idx);
-              if (tc.id) entry.id = tc.id;
-              if (tc.function?.name) entry.function.name += tc.function.name;
-              if (tc.function?.arguments) entry.function.arguments += tc.function.arguments;
+              const toolCallEntry = toolCallMap.get(toolCallIndex);
+              if (toolCallDelta.id) toolCallEntry.id = toolCallDelta.id;
+              if (toolCallDelta.function?.name)
+                toolCallEntry.function.name += toolCallDelta.function.name;
+              if (toolCallDelta.function?.arguments)
+                toolCallEntry.function.arguments +=
+                  toolCallDelta.function.arguments;
             }
           }
         }
 
         if (onProgress) {
           onProgress({
-            content,
+            content: accumulatedContent,
             toolCalls: Array.from(toolCallMap.values()),
-            usage,
+            usage: tokenUsage,
           });
         }
       }
@@ -111,10 +113,10 @@ async function chat(messages, model, options = {}, onProgress, signal) {
   });
 
   const toolCalls = Array.from(toolCallMap.values()).filter(
-    (tc) => tc.function.name
+    (toolCallEntry) => toolCallEntry.function.name,
   );
 
-  return { content, toolCalls, usage };
+  return { content: accumulatedContent, toolCalls, usage: tokenUsage };
 }
 
 module.exports = { chat };

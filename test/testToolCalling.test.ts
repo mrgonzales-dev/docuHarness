@@ -1,10 +1,11 @@
-import { handler as chatHandler, clearHistory } from "../src/inter-process-communication/chat";
+import { ChatSession } from "../src/inter-process-communication/chat";
 import * as fs from "fs";
 import * as path from "path";
 
 describe("AI tool calling end-to-end", () => {
   const tmpDir = path.join(__dirname, "tmp-toolcall");
   const tmpFile = path.join(tmpDir, "doc.txt");
+  let session: ChatSession;
 
   beforeAll(() => {
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
@@ -19,11 +20,11 @@ describe("AI tool calling end-to-end", () => {
   });
 
   beforeEach(() => {
-    clearHistory();
+    session = new ChatSession();
   });
 
   test("AI calls readFile tool and uses the result", async () => {
-    const result = await chatHandler(
+    const result = await session.handle(
       {},
       { message: `Read the file at ${tmpFile} and tell me what it says.`, model: "wbridge/glm-5.2" }
     );

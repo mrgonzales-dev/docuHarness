@@ -3,6 +3,9 @@
  * Receives a message and model from the renderer, sends them to the AI API,
  * and returns the AI reply.
  *
+ * ChatSession encapsulates conversation history and abort controller
+ * as instance state, enabling multiple independent agent sessions.
+ *
  * @param {string} message - The user message to send to the AI.
  * @param {string} model - The model ID to use for the request.
  * @returns {Promise<{ok: boolean, reply?: string, error?: string}>}
@@ -11,26 +14,35 @@ const { chat } = require("../ai-bridge");
 const { toolDefinitions, toolFunctions } = require("../tools");
 const thinkingTexts = require("../thinking-texts");
 
-let history = [];
-let currentAbortController = null;
-
-function clearHistory() {
-  history = [];
-}
-
 function randomThinkingText() {
   return thinkingTexts[Math.floor(Math.random() * thinkingTexts.length)];
 }
 
-module.exports = {
-  name: "chat",
-  handler: async (event, { message, model, folderPath }) => {
+class ChatSession {
+  constructor() {
+    this.history = [];
+    this.currentAbortController = null;
+  }
+
+  clearHistory() {
+    this.history = [];
+  }
+
+  interrupt() {
+    if (this.currentAbortController) {
+      this.currentAbortController.abort();
+    }
+  }
+
+  async handle(event, { message, model, folderPath }) {
+    // Setup: timing, token tracking, abort controller
     const startTime = Date.now();
     let totalTokens = 0;
 
-    currentAbortController = new AbortController();
-    const signal = currentAbortController.signal;
+    this.currentAbortController = new AbortController();
+    const signal = this.currentAbortController.signal;
 
+    // Renderer communication helpers
     const sendThinking = (text) => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       const tokens = totalTokens;
@@ -46,12 +58,14 @@ module.exports = {
     };
 
     try {
-      if (history.length === 0) {
+      // System prompt: built once on first message
+      if (this.history.length === 0) {
         const systemPrompt = JSON.stringify({
           role: "You are an agentic coding assistant. You help engineers plan and build software.",
           system_setup: {
             working_directory: folderPath || "not set",
-            instructions: "Use the working directory as basePath when calling fileSearch or fileGrep.",
+            instructions:
+              "Use the working directory as basePath when calling fileSearch or fileGrep.",
           },
           tools: toolDefinitions.map((t) => ({
             name: t.function.name,
@@ -60,14 +74,16 @@ module.exports = {
           })),
         });
 
-        history.push({
+        this.history.push({
           role: "system",
           content: systemPrompt,
         });
       }
 
-      history.push({ role: "user", content: message });
+      // Add user message to history
+      this.history.push({ role: "user", content: message });
 
+      // Streaming progress callback
       let currentThinkingText = randomThinkingText();
 
       const onProgress = (progress) => {
@@ -79,16 +95,18 @@ module.exports = {
 
       sendThinking(currentThinkingText);
 
+      // First AI call
       let reply = await chat(
-        history,
+        this.history,
         model,
         { tools: toolDefinitions },
         onProgress,
         signal,
       );
 
+      // Tool-call loop: execute tools, feed results back to AI
       while (reply.toolCalls && reply.toolCalls.length > 0) {
-        history.push({
+        this.history.push({
           role: "assistant",
           content: reply.content || "",
           tool_calls: reply.toolCalls,
@@ -120,7 +138,7 @@ module.exports = {
           }
 
           // Add tool result to history
-          history.push({
+          this.history.push({
             role: "tool",
             content: result,
             tool_call_id: toolCall.id,
@@ -131,7 +149,7 @@ module.exports = {
         currentThinkingText = randomThinkingText();
         sendThinking(currentThinkingText);
         reply = await chat(
-          history,
+          this.history,
           model,
           { tools: toolDefinitions },
           onProgress,
@@ -139,22 +157,30 @@ module.exports = {
         );
       }
 
-      history.push({ role: "assistant", content: reply.content });
+      // Finalize: store assistant reply and return
+      this.history.push({ role: "assistant", content: reply.content });
 
       return { ok: true, reply: reply.content, usage: reply.usage };
+
+      // Error handling: abort vs generic failure
     } catch (err) {
       if (err.message === "Aborted") {
         return { ok: false, error: "Interrupted" };
       }
       return { ok: false, error: err.message };
     } finally {
-      currentAbortController = null;
+      this.currentAbortController = null;
     }
-  },
-  interrupt: () => {
-    if (currentAbortController) {
-      currentAbortController.abort();
-    }
-  },
-  clearHistory,
+  }
+}
+
+// Default singleton for backward compatibility with the IPC registry
+const defaultChatSession = new ChatSession();
+
+module.exports = {
+  ChatSession,
+  name: "chat",
+  handler: (event, args) => defaultChatSession.handle(event, args),
+  interrupt: () => defaultChatSession.interrupt(),
+  clearHistory: () => defaultChatSession.clearHistory(),
 };
