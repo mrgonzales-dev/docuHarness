@@ -1,4 +1,4 @@
-import { AgentSession } from "../src/ipc/components/agent";
+import { AgentSession } from "@/ipc/components/agent";
 import * as fs from "fs";
 import * as path from "path";
 

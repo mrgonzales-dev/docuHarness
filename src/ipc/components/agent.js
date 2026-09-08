@@ -10,9 +10,9 @@
  * @param {string} model - The model ID to use for the request.
  * @returns {Promise<{ok: boolean, reply?: string, error?: string}>}
  */
-const { chat } = require("../../ai-bridge");
-const { toolDefinitions, toolFunctions } = require("../../tools");
-const thinkingTexts = require("../../thinking-texts");
+const { chat } = require("@/ai-bridge");
+const { toolDefinitions, toolFunctions } = require("@/tools");
+const thinkingTexts = require("@/thinking-texts");
 
 function randomThinkingText() {
   return thinkingTexts[Math.floor(Math.random() * thinkingTexts.length)];

@@ -1,4 +1,4 @@
-import { AgentSession } from "../src/ipc/components/agent";
+import { AgentSession } from "@/ipc/components/agent";
 
 describe("Chat handler memory", () => {
   let session: AgentSession;

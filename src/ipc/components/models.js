@@ -4,7 +4,7 @@
  *
  * @returns {Promise<{ok: boolean, models?: string[], error?: string}>}
  */
-const { getModels } = require("../config");
+const { getModels } = require("@/config");
 
 module.exports = {
   name: "get-models",

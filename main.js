@@ -1,8 +1,9 @@
+require("module-alias").addAlias("@", __dirname + "/src");
 const { app, BrowserWindow } = require("electron");
 const axios = require("axios");
 const path = require("path");
-const { loadConfig } = require("./src/config");
-const { registerIpcHandlers } = require("./src/ipc");
+const { loadConfig } = require("@/config");
+const { registerIpcHandlers } = require("@/ipc");
 
 async function checkApi() {
   const { host, apiKey } = loadConfig();
