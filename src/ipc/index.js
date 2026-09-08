@@ -4,10 +4,10 @@
  * Call registerIpcHandlers() once during app startup.
  */
 const { ipcMain } = require("electron");
-const agent = require("./agent");
-const models = require("./models");
-const dialog = require("./dialog");
-const folder = require("./folder");
+const agent = require("./components/agent");
+const models = require("./components/models");
+const dialog = require("./components/dialog");
+const folder = require("./components/folder");
 
 const handlers = [agent, models, dialog, folder];
 

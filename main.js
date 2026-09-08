@@ -2,7 +2,7 @@ const { app, BrowserWindow } = require("electron");
 const axios = require("axios");
 const path = require("path");
 const { loadConfig } = require("./src/config");
-const { registerIpcHandlers } = require("./src/inter-process-communication");
+const { registerIpcHandlers } = require("./src/ipc");
 
 async function checkApi() {
   const { host, apiKey } = loadConfig();
