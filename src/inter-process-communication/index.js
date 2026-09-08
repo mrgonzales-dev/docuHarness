@@ -4,18 +4,18 @@
  * Call registerIpcHandlers() once during app startup.
  */
 const { ipcMain } = require("electron");
-const chat = require("./chat");
+const agent = require("./agent");
 const models = require("./models");
 const dialog = require("./dialog");
 const folder = require("./folder");
 
-const handlers = [chat, models, dialog, folder];
+const handlers = [agent, models, dialog, folder];
 
 function registerIpcHandlers() {
   for (const { name, handler } of handlers) {
     ipcMain.handle(name, handler);
   }
-  ipcMain.handle("chat:interrupt", chat.interrupt);
+  ipcMain.handle("agent:interrupt", agent.interrupt);
 }
 
 module.exports = { registerIpcHandlers };

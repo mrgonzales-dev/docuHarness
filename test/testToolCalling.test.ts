@@ -1,11 +1,11 @@
-import { ChatSession } from "../src/inter-process-communication/chat";
+import { AgentSession } from "../src/inter-process-communication/agent";
 import * as fs from "fs";
 import * as path from "path";
 
 describe("AI tool calling end-to-end", () => {
   const tmpDir = path.join(__dirname, "tmp-toolcall");
   const tmpFile = path.join(tmpDir, "doc.txt");
-  let session: ChatSession;
+  let session: AgentSession;
 
   beforeAll(() => {
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
@@ -20,7 +20,7 @@ describe("AI tool calling end-to-end", () => {
   });
 
   beforeEach(() => {
-    session = new ChatSession();
+    session = new AgentSession();
   });
 
   test("AI calls readFile tool and uses the result", async () => {

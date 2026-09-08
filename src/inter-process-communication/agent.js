@@ -1,9 +1,9 @@
 /**
- * IPC handler for chat requests.
+ * IPC handler for agent chat requests.
  * Receives a message and model from the renderer, sends them to the AI API,
  * and returns the AI reply.
  *
- * ChatSession encapsulates conversation history and abort controller
+ * AgentSession encapsulates conversation history and abort controller
  * as instance state, enabling multiple independent agent sessions.
  *
  * @param {string} message - The user message to send to the AI.
@@ -18,7 +18,7 @@ function randomThinkingText() {
   return thinkingTexts[Math.floor(Math.random() * thinkingTexts.length)];
 }
 
-class ChatSession {
+class AgentSession {
   constructor() {
     this.history = [];
     this.currentAbortController = null;
@@ -47,13 +47,13 @@ class ChatSession {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       const tokens = totalTokens;
       if (event.sender && event.sender.send) {
-        event.sender.send("chat:thinking", { text, elapsed, tokens });
+        event.sender.send("agent:thinking", { text, elapsed, tokens });
       }
     };
 
     const sendToolCall = (tool, args, status) => {
       if (event.sender && event.sender.send) {
-        event.sender.send("chat:tool", { tool, args, status });
+        event.sender.send("agent:tool", { tool, args, status });
       }
     };
 
@@ -175,12 +175,12 @@ class ChatSession {
 }
 
 // Default singleton for backward compatibility with the IPC registry
-const defaultChatSession = new ChatSession();
+const defaultSession = new AgentSession();
 
 module.exports = {
-  ChatSession,
-  name: "chat",
-  handler: (event, args) => defaultChatSession.handle(event, args),
-  interrupt: () => defaultChatSession.interrupt(),
-  clearHistory: () => defaultChatSession.clearHistory(),
+  AgentSession,
+  name: "agent",
+  handler: (event, args) => defaultSession.handle(event, args),
+  interrupt: () => defaultSession.interrupt(),
+  clearHistory: () => defaultSession.clearHistory(),
 };

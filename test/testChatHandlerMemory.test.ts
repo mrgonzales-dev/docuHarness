@@ -1,10 +1,10 @@
-import { ChatSession } from "../src/inter-process-communication/chat";
+import { AgentSession } from "../src/inter-process-communication/agent";
 
 describe("Chat handler memory", () => {
-  let session: ChatSession;
+  let session: AgentSession;
 
   beforeEach(() => {
-    session = new ChatSession();
+    session = new AgentSession();
   });
 
   test("handler stores conversation history across calls", async () => {
