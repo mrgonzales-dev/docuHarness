@@ -22,10 +22,12 @@ class AgentSession {
   constructor() {
     this.history = [];
     this.currentAbortController = null;
+    this.lastFolderPath = null;
   }
 
   clearHistory() {
     this.history = [];
+    this.lastFolderPath = null;
   }
 
   interrupt() {
@@ -58,14 +60,20 @@ class AgentSession {
     };
 
     try {
-      // System prompt: built once on first message
-      if (this.history.length === 0) {
+      // System prompt: rebuild when folderPath changes
+      const currentFolderPath = folderPath || "";
+      if (this.lastFolderPath !== currentFolderPath) {
+        // Remove old system prompt if it exists
+        if (this.history.length > 0 && this.history[0].role === "system") {
+          this.history.shift();
+        }
+
         const systemPrompt = JSON.stringify({
           role: "You are an agentic coding assistant. You help engineers plan and build software.",
           system_setup: {
             working_directory: folderPath || "not set",
             instructions: folderPath
-              ? "Use the working directory as basePath when calling fileSearch or fileGrep."
+              ? `Use the working directory (${folderPath}) as basePath when calling fileSearch or fileGrep. Relative paths in readFile and listDirectory resolve against this directory.`
               : "No working directory is set. Do not call any tools that need a path. Ask the user to select a folder first.",
           },
           tools: toolDefinitions.map((t) => ({
@@ -75,10 +83,11 @@ class AgentSession {
           })),
         });
 
-        this.history.push({
+        this.history.unshift({
           role: "system",
           content: systemPrompt,
         });
+        this.lastFolderPath = currentFolderPath;
       }
 
       // Add user message to history
@@ -128,7 +137,7 @@ class AgentSession {
           let result;
           if (fn) {
             try {
-              result = fn(args);
+              result = fn(args, folderPath);
               sendToolCall(toolName, args, "done", callId);
             } catch (err) {
               result = `Error: ${err.message}`;
