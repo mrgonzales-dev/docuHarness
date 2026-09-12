@@ -1,16 +1,6 @@
 <template>
   <div class="statusline">
-      
-    <!-- folder selector -->
-    <div class="folder-selector">
-      <div class="folder-display" @click="$emit('selectFolder')">
-        <span class="folder-label">{{ folderPath || "Select Folder..." }}</span>
-        <span v-if="folderPath" class="folder-icon" v-html="folderOpenIcon"></span>
-        <span v-else class="folder-icon" v-html="folderClosedIcon"></span>
-      </div>
-    </div>
-
-    <!-- //drop down for model selector -->
+    <!-- drop down for model selector -->
     <div class="model-dropdown">
       <div class="model-display" @click="toggleDropdown">
         {{ selectedModel || "Select a model..." }}
@@ -46,16 +36,13 @@
 
 <script setup>
 import { ref, computed, nextTick } from "vue";
-import folderOpenIcon from "../../icons/folder-open-icon.svg?raw";
-import folderClosedIcon from "../../icons/folder-open-closed.svg?raw";
 
 const props = defineProps({
   models: { type: Array, default: () => [] },
   selectedModel: { type: String, default: "" },
-  folderPath: { type: String, default: "" },
 });
 
-const emit = defineEmits(["update:selectedModel", "selectFolder"]);
+const emit = defineEmits(["update:selectedModel"]);
 
 const dropdownOpen = ref(false);
 const searchQuery = ref("");

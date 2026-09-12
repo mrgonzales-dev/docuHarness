@@ -2,6 +2,10 @@
   <div class="side-panel">
     <div class="panel-tabs">
       <div class="panel-tab active">Browser</div>
+      <div class="folder-picker" @click="$emit('selectFolder')" :title="folderPath || 'Select folder'">
+        <span v-if="folderPath" class="folder-icon" v-html="folderOpenIcon"></span>
+        <span v-else class="folder-icon" v-html="folderClosedIcon"></span>
+      </div>
     </div>
     <div class="panel-content">
       <div v-if="!folderPath" class="side-panel-empty">
@@ -32,10 +36,14 @@
 <script setup>
 import { ref, watch } from "vue";
 import FileBrowserEntry from "./FileBrowserEntry.vue";
+import folderOpenIcon from "../../icons/folder-open-icon.svg?raw";
+import folderClosedIcon from "../../icons/folder-open-closed.svg?raw";
 
 const props = defineProps({
   folderPath: { type: String, default: "" },
 });
+
+defineEmits(["selectFolder"]);
 
 const entries = ref([]);
 const loading = ref(false);
@@ -96,7 +104,7 @@ watch(() => props.folderPath, loadContents, { immediate: true });
 
 <style scoped>
 .side-panel {
-  grid-row: 1 / -1;
+  grid-row: 2 / -1;
   grid-column: 1;
   border: 1px solid var(--border);
   background-color: var(--bg-secondary);
@@ -121,6 +129,23 @@ watch(() => props.folderPath, loadContents, { immediate: true });
 
 .panel-tab.active {
   color: var(--text);
+}
+
+.folder-picker {
+  margin-left: auto;
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.folder-picker:hover .folder-icon {
+  opacity: 0.8;
+}
+
+.folder-icon :deep(svg) {
+  width: 14px;
+  height: 14px;
 }
 
 .panel-content {

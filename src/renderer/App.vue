@@ -1,12 +1,11 @@
 <template>
   <div class="parent">
+    <TitleBar />
     <StatusBar
       :models="models"
       v-model:selectedModel="selectedModel"
-      :folderPath="folderPath"
-      @selectFolder="selectFolder"
     />
-    <FileBrowserPanel :folderPath="folderPath" />
+    <FileBrowserPanel :folderPath="folderPath" @selectFolder="selectFolder" />
     <ChatBox :messages="messages" :queue="queue" :isResponding="isResponding" @sendQueue="flushQueue" />
     <QuickPromptActionToolBar @send="handleSend" />
     <MessageInput @send="handleSend" @sendQueue="flushQueue" />
@@ -22,6 +21,7 @@ import ChatBox from "./components/ChatBox.vue";
 import MessageInput from "./components/MessageInput.vue";
 import FileBrowserPanel from "./components/FileBrowserPanel.vue";
 import QuickPromptActionToolBar from "./components/QuickPromptActionToolBar.vue";
+import TitleBar from "./components/TitleBar.vue";
 import { applyToolCall } from "./partials/toolCalls";
 
 const messages = ref([]);
