@@ -142,7 +142,10 @@ function hasSkills() {
  * @returns {string} JSON array of { name, type } entries.
  */
 function listDirectory({ dirPath } = {}) {
-  const target = dirPath || process.cwd();
+  if (!dirPath) {
+    throw new Error("No directory path provided. Ask the user to select a folder first.");
+  }
+  const target = dirPath;
   const entries = fs.readdirSync(target, { withFileTypes: true });
 
   const dirs = [];
@@ -216,7 +219,7 @@ const toolDefinitions = [
     type: "function",
     function: {
       name: "listDirectory",
-      description: "List files and folders in a directory. Returns entries with type (dir/file), folders first. Filters hidden files.",
+      description: "List files and folders in a directory. Returns entries with type (dir/file), folders first. Filters hidden files. Requires a dirPath — do not call without one.",
       parameters: {
         type: "object",
         properties: {

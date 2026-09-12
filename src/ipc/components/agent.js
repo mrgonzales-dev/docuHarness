@@ -64,8 +64,9 @@ class AgentSession {
           role: "You are an agentic coding assistant. You help engineers plan and build software.",
           system_setup: {
             working_directory: folderPath || "not set",
-            instructions:
-              "Use the working directory as basePath when calling fileSearch or fileGrep.",
+            instructions: folderPath
+              ? "Use the working directory as basePath when calling fileSearch or fileGrep."
+              : "No working directory is set. Do not call any tools that need a path. Ask the user to select a folder first.",
           },
           tools: toolDefinitions.map((t) => ({
             name: t.function.name,
