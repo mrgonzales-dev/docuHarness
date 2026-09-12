@@ -67,6 +67,7 @@ function handleSave({ name, text }) {
   height: 24px;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   padding: 0 8px;
   gap: 4px;
   flex-shrink: 0;
