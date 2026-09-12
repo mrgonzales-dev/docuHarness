@@ -7,23 +7,48 @@ let finder = null;
 
 const skillsDir = path.join(__dirname, "default_skills");
 
-function fileSearch({ query, basePath }) {
-  // kill that freaking finder first
+const appRoot = path.resolve(__dirname);
+
+function resolvePath(p, folderPath) {
+  if (!p) return p;
+  if (path.isAbsolute(p)) return p;
+  if (folderPath) return path.resolve(folderPath, p);
+  return path.resolve(p);
+}
+
+function guardPath(resolved) {
+  const rel = path.relative(appRoot, resolved);
+  if (rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel))) {
+    throw new Error("Access denied: cannot read the app directory.");
+  }
+}
+
+function requireFolder(folderPath) {
+  if (!folderPath) {
+    throw new Error("No folder selected. Ask the user to select a folder first.");
+  }
+}
+
+function fileSearch({ query, basePath }, folderPath) {
+  requireFolder(folderPath);
   if (finder) finder.destroy();
 
-  const result = FileFinder.create({ basePath, aiMode: true });
+  const resolvedBase = resolvePath(basePath, folderPath);
+  guardPath(resolvedBase);
+  const result = FileFinder.create({ basePath: resolvedBase, aiMode: true });
   if (!result.ok) throw new Error(result.error);
 
   finder = result.value;
   return finder.fileSearch(query, { pageSize: 20 });
 }
 
-function fileGrep({ query, basePath }) {
-  //patay ka sakin
+function fileGrep({ query, basePath }, folderPath) {
+  requireFolder(folderPath);
   if (finder) finder.destroy();
 
-  const result = FileFinder.create({ basePath, aiMode: true });
-  // may error ba? tanga dapat wala
+  const resolvedBase = resolvePath(basePath, folderPath);
+  guardPath(resolvedBase);
+  const result = FileFinder.create({ basePath: resolvedBase, aiMode: true });
   if (!result.ok) throw new Error(result.error);
 
   finder = result.value;
@@ -42,12 +67,15 @@ function fileGrep({ query, basePath }) {
  * @param {string} filePath - The path to the file to read.
  * @returns {string} The file content.
  */
-function readFile({ filePath }) {
-  const stat = fs.statSync(filePath);
+function readFile({ filePath }, folderPath) {
+  requireFolder(folderPath);
+  const resolved = resolvePath(filePath, folderPath);
+  guardPath(resolved);
+  const stat = fs.statSync(resolved);
   if (stat.isDirectory()) {
-    throw new Error(`Path is a directory, not a file: ${filePath}`);
+    throw new Error(`Path is a directory, not a file: ${resolved}`);
   }
-  return fs.readFileSync(filePath, "utf-8");
+  return fs.readFileSync(resolved, "utf-8");
 }
 
 /**
@@ -141,11 +169,13 @@ function hasSkills() {
  * @param {string} [dirPath] - The directory to list. Defaults to cwd.
  * @returns {string} JSON array of { name, type } entries.
  */
-function listDirectory({ dirPath } = {}) {
+function listDirectory({ dirPath } = {}, folderPath) {
+  requireFolder(folderPath);
   if (!dirPath) {
     throw new Error("No directory path provided. Ask the user to select a folder first.");
   }
-  const target = dirPath;
+  const target = resolvePath(dirPath, folderPath);
+  guardPath(target);
   const entries = fs.readdirSync(target, { withFileTypes: true });
 
   const dirs = [];
@@ -225,7 +255,7 @@ const toolDefinitions = [
         properties: {
           dirPath: {
             type: "string",
-            description: "The directory path to list. Defaults to the working directory if omitted.",
+            description: "The directory path to list. Relative paths resolve against the working directory.",
           },
         },
         required: [],
