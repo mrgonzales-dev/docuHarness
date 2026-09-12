@@ -32,6 +32,22 @@ All AI-generated text (chat, reports, code comments, documentation, explanations
 - Do not edit existing tests unless the user explicitly says so.
 - Do not run the test suite unless the user explicitly says so.
 
+## Git Commit Policy
+
+- **Use conventional prefixes.** Start each commit subject with one of: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `style`, `perf`. Follow with a colon, a space, and the subject (e.g., `feat: add listDirectory tool`).
+- **One logical change per commit.** Do not bundle features, refactors, and UI polish into one commit. Split them so each commit can revert on its own.
+- **Write a clear subject.** Keep the subject under 60 characters. Use the imperative mood (e.g., "Add the tool" not "Added the tool"). Do not use vague subjects like "fck", "did sumthing", "checkpoint", or "lezgo".
+- **Add a body for non-trivial commits.** Explain why the change is made, not just what changed. List the files or areas touched.
+- **Keep messages professional.** Do not use profanity or slang in commit subjects or bodies.
+- **Apply ASD-STE100 to commit messages.** The communication standard above applies to all commit text.
+- **Add the Co-Authored-By trailer.** When Devin assists, append the trailer:
+  ```
+  Generated with [Devin](https://devin.ai)
+
+  Co-Authored-By: Devin <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+  ```
+- **Do not push or commit secrets.** Never stage `config/api_key.json` or any file with real keys.
+
 ## Explanation and Reporting
 
 - **Always use a behavior table.** When explaining or reporting on code, logic, calculations, or comparisons, present the information in a table format with columns for the behavior, condition, and result. Do not use long paragraphs where a table communicates the same information more clearly.
