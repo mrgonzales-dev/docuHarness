@@ -22,7 +22,7 @@ import ChatBox from "./components/ChatBox.vue";
 import MessageInput from "./components/MessageInput.vue";
 import FileBrowserPanel from "./components/FileBrowserPanel.vue";
 import QuickPromptActionToolBar from "./components/QuickPromptActionToolBar.vue";
-import { applyToolCall } from "./toolGrouping";
+import { applyToolCall } from "./partials/toolCalls";
 
 const messages = ref([]);
 const models = ref([]);

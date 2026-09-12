@@ -20,7 +20,7 @@
 
 <script setup>
 import { computed } from "vue";
-import { toolLabel, formatToolArgs, aggregateStatus } from "../../toolGrouping";
+import { toolLabel, formatToolArgs, aggregateStatus } from "../../partials/toolCalls";
 
 const props = defineProps({
   tool: { type: String, required: true },
