@@ -3,7 +3,7 @@
     <div class="queue-divider">
       <span class="queue-count">── {{ queue.length }} queued ──</span>
       <span class="queue-divider-line"></span>
-      <span class="queue-hint">↵ send now</span>
+      <button class="queue-send-btn" @click="$emit('sendQueue')">↵ send now</button>
     </div>
     <div class="queue-items">
       <div v-for="(item, i) in queue" :key="i" class="queue-item">
@@ -55,6 +55,23 @@ defineEmits(["sendQueue", "interrupt"]);
   color: var(--text-secondary);
   white-space: nowrap;
   font-size: 11px;
+}
+
+.queue-send-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.queue-send-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
 }
 
 .queue-items {
