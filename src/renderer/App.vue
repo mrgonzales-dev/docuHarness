@@ -8,7 +8,7 @@
     />
     <FileBrowserPanel :folderPath="folderPath" />
     <ChatBox :messages="messages" :queue="queue" :isResponding="isResponding" @sendQueue="flushQueue" />
-    <QuickPromptActionToolBar />
+    <QuickPromptActionToolBar @send="handleSend" />
     <MessageInput @send="handleSend" @sendQueue="flushQueue" />
   </div>
 </template>
@@ -70,10 +70,7 @@ function handleSend(text) {
 
 function flushQueue() {
   if (queue.value.length === 0) return;
-  if (isResponding.value) {
-    if (window.api.interruptChat) window.api.interruptChat();
-    return;
-  }
+  if (isResponding.value) return;
   const next = queue.value.shift();
   sendMessage(next);
 }
