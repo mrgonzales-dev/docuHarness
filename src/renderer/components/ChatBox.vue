@@ -8,15 +8,11 @@
       field that decides which component renders it.
 
   Sender to component mapping:
-    - "You"                          → UserMessage
-    - "AI"                           → AgentReply
-    - "Thinking"                     → ThinkingReply
-    - "Tool" + tool: "readFile"      → ReadingFileReply
-    - "Tool" + tool: "fileSearch"    → SearchingFileReply
-    - "Tool" + tool: "fileGrep"      → GrepReply
-    - "Tool" + tool: "invokeSkill"   → InvokeSkillReply
-    - "Tool" + tool: "listDirectory" → ListDirectoryReply
-    - anything else                  → fallback error div
+    - "You"        → UserMessage
+    - "AI"         → AgentReply
+    - "Thinking"   → ThinkingReply
+    - "Tool"       → AgentToolCall (grouped by tool type)
+    - anything else → fallback error div
 -->
 <template>
   <div class="div1" id="chat-box">
@@ -30,30 +26,10 @@
           :elapsed="msg.elapsed"
           :tokens="msg.tokens"
         />
-        <ReadingFileReply
-          v-else-if="msg.sender === 'Tool' && msg.tool === 'readFile'"
-          :args="msg.args"
-          :status="msg.status"
-        />
-        <SearchingFileReply
-          v-else-if="msg.sender === 'Tool' && msg.tool === 'fileSearch'"
-          :args="msg.args"
-          :status="msg.status"
-        />
-        <GrepReply
-          v-else-if="msg.sender === 'Tool' && msg.tool === 'fileGrep'"
-          :args="msg.args"
-          :status="msg.status"
-        />
-        <InvokeSkillReply
-          v-else-if="msg.sender === 'Tool' && msg.tool === 'invokeSkill'"
-          :args="msg.args"
-          :status="msg.status"
-        />
-        <ListDirectoryReply
-          v-else-if="msg.sender === 'Tool' && msg.tool === 'listDirectory'"
-          :args="msg.args"
-          :status="msg.status"
+        <AgentToolCall
+          v-else-if="msg.sender === 'Tool'"
+          :tool="msg.tool"
+          :items="msg.items"
         />
         <div v-else class="msg msg-error">
           {{ msg.sender }}: {{ msg.text }}
@@ -74,11 +50,7 @@ import { ref, watch, nextTick } from "vue";
 import UserMessage from "./UserMessage.vue";
 import AgentReply from "./AgentReply.vue";
 import ThinkingReply from "./agentReply/ThinkingReply.vue";
-import ReadingFileReply from "./agentReply/ReadingFileReply.vue";
-import SearchingFileReply from "./agentReply/SearchingFileReply.vue";
-import GrepReply from "./agentReply/GrepReply.vue";
-import InvokeSkillReply from "./agentReply/InvokeSkillReply.vue";
-import ListDirectoryReply from "./agentReply/ListDirectoryReply.vue";
+import AgentToolCall from "./agentReply/AgentToolCall.vue";
 import QueueBar from "./QueueBar.vue";
 
 const props = defineProps({

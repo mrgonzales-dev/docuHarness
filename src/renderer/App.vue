@@ -22,6 +22,7 @@ import ChatBox from "./components/ChatBox.vue";
 import MessageInput from "./components/MessageInput.vue";
 import FileBrowserPanel from "./components/FileBrowserPanel.vue";
 import QuickPromptActionToolBar from "./components/QuickPromptActionToolBar.vue";
+import { applyToolCall } from "./toolGrouping";
 
 const messages = ref([]);
 const models = ref([]);
@@ -98,22 +99,9 @@ async function sendMessage(text) {
   };
 
   const handleToolCall = (data) => {
-    // find tools if kasama sa index 0+, fck this was hard to understand
-
-    const existing = messages.value.findIndex(
-      (m) => m.sender === "Tool" && m.tool === data.tool && JSON.stringify(m.args) === JSON.stringify(data.args)
-    );
-    if (existing >= 0) {
-      messages.value[existing].status = data.status;
-    } else {
-      messages.value.splice(thinkingId, 0, {
-        sender: "Tool",
-        tool: data.tool,
-        args: data.args,
-        status: data.status,
-      });
-      thinkingId++;
-    }
+    const result = applyToolCall(messages.value, thinkingId, data);
+    messages.value = result.messages;
+    thinkingId = result.thinkingId;
   };
 
   if (window.api.onThinking) {

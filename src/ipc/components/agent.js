@@ -51,9 +51,9 @@ class AgentSession {
       }
     };
 
-    const sendToolCall = (tool, args, status) => {
+    const sendToolCall = (tool, args, status, callId) => {
       if (event.sender && event.sender.send) {
-        event.sender.send("agent:tool", { tool, args, status });
+        event.sender.send("agent:tool", { tool, args, status, callId });
       }
     };
 
@@ -120,21 +120,22 @@ class AgentSession {
             args = JSON.parse(toolCall.function.arguments);
           } catch {}
 
-          sendToolCall(toolName, args, "running");
+          const callId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+          sendToolCall(toolName, args, "running", callId);
 
           const fn = toolFunctions[toolName];
           let result;
           if (fn) {
             try {
               result = fn(args);
-              sendToolCall(toolName, args, "done");
+              sendToolCall(toolName, args, "done", callId);
             } catch (err) {
               result = `Error: ${err.message}`;
-              sendToolCall(toolName, args, "error");
+              sendToolCall(toolName, args, "error", callId);
             }
           } else {
             result = `Error: Unknown tool "${toolName}"`;
-            sendToolCall(toolName, args, "error");
+            sendToolCall(toolName, args, "error", callId);
           }
 
           // Add tool result to history
