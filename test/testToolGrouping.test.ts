@@ -3,7 +3,7 @@ import {
   aggregateStatus,
   toolLabel,
   formatToolArgs,
-} from "@/renderer/toolGrouping";
+} from "@/renderer/partials/toolCalls";
 
 describe("Tool call grouping", () => {
   function makeMessages(tools: any[] = []) {
