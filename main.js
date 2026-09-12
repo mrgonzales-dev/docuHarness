@@ -1,5 +1,5 @@
 require("module-alias").addAlias("@", __dirname + "/src");
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const axios = require("axios");
 const path = require("path");
 const { loadConfig } = require("@/config");
@@ -29,12 +29,21 @@ function createWindow() {
   win = new BrowserWindow({
     width: 800,
     height: 800,
+    frame: false,
+    transparent: false,
     webPreferences: {
       preload: __dirname + "/src/preload.js",
       contextIsolation: true,
       nodeIntegration: false,
     },
   });
+
+  ipcMain.handle("window:minimize", () => win.minimize());
+  ipcMain.handle("window:maximize", () => {
+    if (win.isMaximized()) win.unmaximize();
+    else win.maximize();
+  });
+  ipcMain.handle("window:close", () => win.close());
 
   if (isDev) {
     win.loadURL("http://127.0.0.1:3000");

@@ -12,6 +12,10 @@
  *   - getModels()                        Get the list of available AI models.
  *   - selectFolder()                     Open the folder picker dialog.
  *   - readFolderContents(path)           Read the contents of a folder.
+ *   - interruptChat()                     Interrupt the current chat.
+ *   - windowMinimize()                    Minimize the window.
+ *   - windowMaximize()                    Maximize or unmaximize the window.
+ *   - windowClose()                       Close the window.
  *
  * onThinking and onToolCall return an unsubscribe function. Call it
  * to stop listening when the chat ends.
@@ -39,4 +43,7 @@ contextBridge.exposeInMainWorld("api", {
   selectFolder: () => ipcRenderer.invoke("dialog:openFolder"),
   readFolderContents: (path) => ipcRenderer.invoke("folder:readContents", path),
   interruptChat: () => ipcRenderer.invoke("agent:interrupt"),
+  windowMinimize: () => ipcRenderer.invoke("window:minimize"),
+  windowMaximize: () => ipcRenderer.invoke("window:maximize"),
+  windowClose: () => ipcRenderer.invoke("window:close"),
 });
