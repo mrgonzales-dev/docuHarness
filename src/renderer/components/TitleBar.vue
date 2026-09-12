@@ -1,9 +1,9 @@
 <template>
   <div class="title-bar">
     <div class="traffic-lights">
-      <button class="traffic-light traffic-light-close" @click="close"></button>
       <button class="traffic-light traffic-light-minimize" @click="minimize"></button>
       <button class="traffic-light traffic-light-maximize" @click="maximize"></button>
+      <button class="traffic-light traffic-light-close" @click="close"></button>
     </div>
   </div>
 </template>
