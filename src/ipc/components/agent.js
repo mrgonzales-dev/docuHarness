@@ -166,7 +166,7 @@ class AgentSession {
 
       // Error handling: abort vs generic failure
     } catch (err) {
-      if (err.message === "Aborted") {
+      if (err.message === "Aborted" || err.message === "canceled") {
         return { ok: false, error: "Interrupted" };
       }
       return { ok: false, error: err.message };
