@@ -8,11 +8,12 @@
       field that decides which component renders it.
 
   Sender to component mapping:
-    - "You"        → UserMessage
-    - "AI"         → AgentReply
-    - "Thinking"   → ThinkingReply
-    - "Tool"       → AgentToolCall (grouped by tool type)
-    - anything else → fallback error div
+    - "You"         → UserMessage
+    - "AI"          → AgentReply
+    - "Thinking"    → ThinkingReply
+    - "Tool"        → AgentToolCall (grouped by tool type)
+    - "Error"       → AgentError (type: error)
+    - "Interrupted"  → AgentError (type: interrupted)
 -->
 <template>
   <div class="div1" id="chat-box">
@@ -31,9 +32,16 @@
           :tool="msg.tool"
           :items="msg.items"
         />
-        <div v-else class="msg msg-error">
-          {{ msg.sender }}: {{ msg.text }}
-        </div>
+        <AgentError
+          v-else-if="msg.sender === 'Interrupted'"
+          :text="msg.text"
+          type="interrupted"
+        />
+        <AgentError
+          v-else-if="msg.sender === 'Error'"
+          :text="msg.text"
+          type="error"
+        />
       </template>
     </div>
     <QueueBar
@@ -51,6 +59,7 @@ import UserMessage from "./UserMessage.vue";
 import AgentReply from "./AgentReply.vue";
 import ThinkingReply from "./agentReply/ThinkingReply.vue";
 import AgentToolCall from "./agentReply/AgentToolCall.vue";
+import AgentError from "./agentReply/AgentError.vue";
 import QueueBar from "./QueueBar.vue";
 
 const props = defineProps({

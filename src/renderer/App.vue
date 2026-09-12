@@ -70,7 +70,10 @@ function handleSend(text) {
 
 function flushQueue() {
   if (queue.value.length === 0) return;
-  if (isResponding.value) return;
+  if (isResponding.value) {
+    if (window.api.interruptChat) window.api.interruptChat();
+    return;
+  }
   const next = queue.value.shift();
   sendMessage(next);
 }
@@ -114,6 +117,8 @@ async function sendMessage(text) {
     folderPath.value);
     if (result.ok) {
       messages.value[thinkingId] = { sender: "AI", text: result.reply };
+    } else if (result.error === "Interrupted") {
+      messages.value[thinkingId] = { sender: "Interrupted", text: "Interrupted" };
     } else {
       messages.value[thinkingId] = { sender: "Error", text: result.error };
     }
