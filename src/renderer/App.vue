@@ -1,11 +1,13 @@
 <template>
-  <div class="parent">
+  <div class="app-shell">
     <TitleBar />
-    <FileBrowserPanel :folderPath="folderPath" @selectFolder="selectFolder" />
-    <AgentInstanceCard
-      :models="models"
-      :folderPath="folderPath"
-    />
+    <div class="parent">
+      <FileBrowserPanel :folderPath="folderPath" @selectFolder="selectFolder" />
+      <AgentInstanceCard
+        :models="models"
+        :folderPath="folderPath"
+      />
+    </div>
   </div>
 </template>
 

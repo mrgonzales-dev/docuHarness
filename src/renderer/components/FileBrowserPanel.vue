@@ -104,7 +104,7 @@ watch(() => props.folderPath, loadContents, { immediate: true });
 
 <style scoped>
 .side-panel {
-  grid-row: 2 / -1;
+  grid-row: 1;
   grid-column: 1;
   border: 1px solid var(--border);
   background-color: var(--bg-secondary);

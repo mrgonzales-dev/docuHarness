@@ -35,8 +35,6 @@ function maximize() {
 
 <style scoped>
 .title-bar {
-  grid-row-start: 1;
-  grid-column: 1 / -1;
   height: 28px;
   display: flex;
   align-items: center;
