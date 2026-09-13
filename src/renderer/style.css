@@ -52,6 +52,7 @@ html, body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  user-select: none;
 }
 
 .parent {
@@ -83,6 +84,7 @@ html, body {
   border: 1px solid var(--border);
   background-color: var(--bg);
   padding: 8px;
+  user-select: text;
 }
 
 .div2 {
@@ -261,6 +263,7 @@ textarea {
   background-color: var(--bg);
   color: var(--text);
   padding: 4px;
+  user-select: text;
 }
 
 textarea:focus {

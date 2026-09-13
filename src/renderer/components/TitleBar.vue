@@ -1,14 +1,25 @@
 <template>
-  <div class="title-bar">
+  <div class="title-bar" :class="{ 'title-bar-left': isMac }">
     <div class="traffic-lights">
-      <button class="traffic-light traffic-light-minimize" @click="minimize"></button>
-      <button class="traffic-light traffic-light-maximize" @click="maximize"></button>
-      <button class="traffic-light traffic-light-close" @click="close"></button>
+      <template v-if="isMac">
+        <button class="traffic-light traffic-light-close" @click="close"></button>
+        <button class="traffic-light traffic-light-minimize" @click="minimize"></button>
+        <button class="traffic-light traffic-light-maximize" @click="maximize"></button>
+      </template>
+      <template v-else>
+        <button class="traffic-light traffic-light-minimize" @click="minimize"></button>
+        <button class="traffic-light traffic-light-maximize" @click="maximize"></button>
+        <button class="traffic-light traffic-light-close" @click="close"></button>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup>
+import { computed } from "vue";
+
+const isMac = computed(() => window.api?.platform === "darwin");
+
 function close() {
   if (window.api?.windowClose) window.api.windowClose();
 }
@@ -34,6 +45,10 @@ function maximize() {
   -webkit-app-region: drag;
   flex-shrink: 0;
   border-bottom: 1px solid var(--border);
+}
+
+.title-bar-left {
+  justify-content: flex-start;
 }
 
 .traffic-lights {
