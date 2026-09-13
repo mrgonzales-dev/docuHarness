@@ -33,6 +33,7 @@ function maximize() {
   padding: 0 12px;
   -webkit-app-region: drag;
   flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
 }
 
 .traffic-lights {

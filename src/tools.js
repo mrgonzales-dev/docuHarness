@@ -68,7 +68,6 @@ function fileGrep({ query, basePath }, folderPath) {
  * @returns {string} The file content.
  */
 function readFile({ filePath }, folderPath) {
-  requireFolder(folderPath);
   const resolved = resolvePath(filePath, folderPath);
   guardPath(resolved);
   const stat = fs.statSync(resolved);
@@ -170,7 +169,6 @@ function hasSkills() {
  * @returns {string} JSON array of { name, type } entries.
  */
 function listDirectory({ dirPath } = {}, folderPath) {
-  requireFolder(folderPath);
   if (!dirPath) {
     throw new Error("No directory path provided. Ask the user to select a folder first.");
   }

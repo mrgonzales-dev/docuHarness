@@ -4,7 +4,7 @@ import {
   addPrompt,
   removePrompt,
   createPrompt,
-} from "@/renderer/partials/quickPrompts";
+} from "@/renderer/components/AgentInstance/partials/quickPrompts";
 
 describe("Quick prompts storage", () => {
   beforeEach(() => {

@@ -1,46 +1,24 @@
 <template>
   <div class="parent">
     <TitleBar />
-    <StatusBar
-      :models="models"
-      v-model:selectedModel="selectedModel"
-    />
     <FileBrowserPanel :folderPath="folderPath" @selectFolder="selectFolder" />
-    <ChatBox :messages="messages" :queue="queue" :isResponding="isResponding" @sendQueue="flushQueue" />
-    <QuickPromptActionToolBar @send="handleSend" />
-    <MessageInput @send="handleSend" @sendQueue="flushQueue" />
+    <AgentInstanceCard
+      :models="models"
+      :folderPath="folderPath"
+    />
   </div>
 </template>
 
 <script setup>
 
-import {ref, onMounted, watch} from "vue";
+import {ref, onMounted} from "vue";
 import "./style.css";
-import StatusBar from "./components/StatusBar.vue";
-import ChatBox from "./components/ChatBox.vue";
-import MessageInput from "./components/MessageInput.vue";
 import FileBrowserPanel from "./components/FileBrowserPanel.vue";
-import QuickPromptActionToolBar from "./components/QuickPromptActionToolBar.vue";
 import TitleBar from "./components/TitleBar.vue";
-import { applyToolCall } from "./partials/toolCalls";
+import AgentInstanceCard from "./components/AgentInstance/AgentInstanceCard.vue";
 
-const messages = ref([]);
 const models = ref([]);
 const folderPath = ref("");
-const selectedModel = ref("");
-const queue = ref([]);
-const isResponding = ref(false);
-
-//watch saved model
-watch(selectedModel, (newModel) => {
-  localStorage.setItem("selectedModel", newModel);
-})
-
-function loadSavedModel() {
- if (!window.api) return;
- //return selected model if there is
- selectedModel.value = localStorage.getItem("selectedModel") || "";
-}
 
 async function loadModels() {
   if (!window.api) return;
@@ -48,10 +26,6 @@ async function loadModels() {
     const result = await window.api.getModels();
     if (result.ok) {
       models.value = result.models;
-      if (result.models.length > 0 && !selectedModel.value) {
-        //load the first model in the index if no model is saved
-        selectedModel.value = result.models[0];
-      }
     } else {
       console.error("Failed to load models:", result.error);
     }
@@ -59,82 +33,6 @@ async function loadModels() {
     console.error("Failed to load models:", err.message);
   }
 }
-
-function handleSend(text) {
-  if (isResponding.value) {
-    queue.value.push(text);
-    return;
-  }
-  sendMessage(text);
-}
-
-function flushQueue() {
-  if (queue.value.length === 0) return;
-  if (isResponding.value) {
-    if (window.api.interruptChat) window.api.interruptChat();
-    return;
-  }
-  const next = queue.value.shift();
-  sendMessage(next);
-}
-
-async function sendMessage(text) {
-  isResponding.value = true;
-  messages.value.push({ sender: "You", text });
-
-  let thinkingId = messages.value.length;
-  messages.value.push({ sender: "Thinking", text: "Thinking", elapsed: 0, tokens: 0 });
-
-  let stopThinkingListener = null;
-  let stopToolListener = null;
-
-  const handleThinking = (data) => {
-    if (messages.value[thinkingId]?.sender !== "Thinking") return;
-    messages.value[thinkingId] = {
-      sender: "Thinking",
-      text: data.text,
-      elapsed: data.elapsed,
-      tokens: data.tokens,
-    };
-  };
-
-  const handleToolCall = (data) => {
-    const result = applyToolCall(messages.value, thinkingId, data);
-    messages.value = result.messages;
-    thinkingId = result.thinkingId;
-  };
-
-  if (window.api.onThinking) {
-    stopThinkingListener = window.api.onThinking(handleThinking);
-  }
-  if (window.api.onToolCall) {
-    stopToolListener = window.api.onToolCall(handleToolCall);
-  }
-
-  try {
-    const result = await window.api.chat(text,
-    selectedModel.value,
-    folderPath.value);
-    if (result.ok) {
-      messages.value[thinkingId] = { sender: "AI", text: result.reply };
-    } else if (result.error === "Interrupted") {
-      messages.value[thinkingId] = { sender: "Interrupted", text: "Interrupted" };
-    } else {
-      messages.value[thinkingId] = { sender: "Error", text: result.error };
-    }
-  } catch (err) {
-    messages.value[thinkingId] = { sender: "Error", text: err.message };
-  } finally {
-    if (stopThinkingListener) stopThinkingListener();
-    if (stopToolListener) stopToolListener();
-    isResponding.value = false;
-    if (queue.value.length > 0) {
-      const next = queue.value.shift();
-      sendMessage(next);
-    }
-  }
-}
-
 
 async function selectFolder() {
   if (!window.api) return;
@@ -147,9 +45,6 @@ async function selectFolder() {
 }
 
 onMounted(() => {
-//check saved models muna 
-  loadSavedModel();
-// then load model
-loadModels();
+  loadModels();
 });
 </script>

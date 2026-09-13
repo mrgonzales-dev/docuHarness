@@ -1,0 +1,171 @@
+<!--
+  AgentInstanceCard.vue
+  A self-contained agent card that bundles the model selector,
+  chat box, quick prompt toolbar, and message input.
+
+  Props:
+    - models: Array of available model names.
+    - folderPath: The shared working directory path.
+
+  State owned by this card:
+    - messages, queue, isResponding, selectedModel
+-->
+<template>
+  <div class="agent-card">
+    <StatusBar
+      :models="models"
+      v-model:selectedModel="selectedModel"
+    />
+    <ChatBox
+      :messages="messages"
+      :queue="queue"
+      :isResponding="isResponding"
+      @sendQueue="flushQueue"
+    />
+    <QuickPromptActionToolBar @send="handleSend" />
+    <MessageInput @send="handleSend" @sendQueue="flushQueue" />
+  </div>
+</template>
+
+<script setup>
+import { ref, watch, onMounted } from "vue";
+
+import StatusBar from "./components/StatusBar.vue";
+import ChatBox from "./components/ChatBox.vue";
+import MessageInput from "./components/MessageInput.vue";
+import QuickPromptActionToolBar from "./components/QuickPromptActionToolBar.vue";
+import { applyToolCall } from "./partials/toolCalls";
+import { shouldFlush, dequeue, handleSend as queueSend } from "./partials/agentQueue";
+
+const props = defineProps({
+  models: { type: Array, default: () => [] },
+  folderPath: { type: String, default: "" },
+});
+
+
+const messages = ref([]);
+const queue = ref([]);
+const isResponding = ref(false);
+const selectedModel = ref("");
+
+watch(selectedModel, (newModel) => {
+  localStorage.setItem("selectedModel", newModel);
+});
+
+function loadSavedModel() {
+  selectedModel.value = localStorage.getItem("selectedModel") || "";
+}
+
+function handleSend(text) {
+  const result = queueSend(queue.value, isResponding.value, text);
+  queue.value = result.queue;
+
+  if (result.action === "send") {
+    sendMessage(result.text);
+  }
+}
+
+function flushQueue() {
+  const action = shouldFlush(queue.value, isResponding.value);
+
+  if (action === "noop") return;
+
+  if (action === "interrupt") {
+    if (window.api.interruptChat) window.api.interruptChat();
+    return;
+  }
+
+  const { item, rest } = dequeue(queue.value);
+  queue.value = rest;
+  if (item) sendMessage(item);
+}
+
+async function sendMessage(text) {
+  isResponding.value = true;
+  messages.value.push({ sender: "You", text });
+
+  let thinkingId = messages.value.length;
+  messages.value.push({ sender: "Thinking", text: "Thinking", elapsed: 0, tokens: 0 });
+
+  let stopThinkingListener = null;
+  let stopToolListener = null;
+
+  const handleThinking = (data) => {
+    if (messages.value[thinkingId]?.sender !== "Thinking") return;
+    messages.value[thinkingId] = {
+      sender: "Thinking",
+      text: data.text,
+      elapsed: data.elapsed,
+      tokens: data.tokens,
+    };
+  };
+
+  const handleToolCall = (data) => {
+    const result = applyToolCall(messages.value, thinkingId, data);
+    messages.value = result.messages;
+    thinkingId = result.thinkingId;
+  };
+
+  if (window.api.onThinking) {
+    stopThinkingListener = window.api.onThinking(handleThinking);
+  }
+  if (window.api.onToolCall) {
+    stopToolListener = window.api.onToolCall(handleToolCall);
+  }
+
+  try {
+    const result = await window.api.chat(text, selectedModel.value, props.folderPath);
+    if (result.ok) {
+      messages.value[thinkingId] = { sender: "AI", text: result.reply };
+    } else if (result.error === "Interrupted") {
+      messages.value[thinkingId] = { sender: "Interrupted", text: "Interrupted" };
+    } else {
+      messages.value[thinkingId] = { sender: "Error", text: result.error };
+    }
+  } catch (err) {
+    messages.value[thinkingId] = { sender: "Error", text: err.message };
+  } finally {
+    if (stopThinkingListener) stopThinkingListener();
+    if (stopToolListener) stopToolListener();
+    isResponding.value = false;
+    if (queue.value.length > 0) {
+      const { item, rest } = dequeue(queue.value);
+      queue.value = rest;
+      if (item) sendMessage(item);
+    }
+  }
+}
+
+onMounted(() => {
+  loadSavedModel();
+});
+
+watch(
+  () => props.models,
+  (models) => {
+    if (models.length > 0 && !selectedModel.value) {
+      selectedModel.value = models[0];
+    }
+  },
+  { immediate: true },
+);
+</script>
+
+<style scoped>
+.agent-card > :deep(.statusline) {
+  flex-shrink: 0;
+}
+
+.agent-card > :deep(.div1) {
+  flex: 1;
+  min-height: 0;
+}
+
+.agent-card > :deep(.quick-action-bar) {
+  flex-shrink: 0;
+}
+
+.agent-card > :deep(.div2) {
+  flex-shrink: 0;
+}
+</style>
