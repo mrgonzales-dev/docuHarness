@@ -92,13 +92,14 @@ function handleSave({ name, text }) {
 }
 
 .quick-btn-add {
-  background-color: var(--bg);
+  background-color: transparent;
   color: var(--text-secondary);
   font-weight: bold;
   padding: 2px 8px;
 }
 
 .quick-btn-add:hover {
+  background-color: var(--bg-tertiary);
   color: var(--text);
 }
 </style>

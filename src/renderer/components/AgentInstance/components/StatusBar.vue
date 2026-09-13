@@ -1,7 +1,7 @@
 <template>
   <div class="statusline">
     <!-- drop down for model selector -->
-    <div class="model-dropdown">
+    <div class="model-dropdown" ref="dropdownRef">
       <div class="model-display" @click="toggleDropdown">
         {{ selectedModel || "Select a model..." }}
         <span class="chevron">{{ dropdownOpen ? "▲" : "▼" }}</span>
@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from "vue";
+import { ref, computed, nextTick, onMounted, onUnmounted } from "vue";
 
 const props = defineProps({
   models: { type: Array, default: () => [] },
@@ -48,6 +48,22 @@ const dropdownOpen = ref(false);
 const searchQuery = ref("");
 const searchInput = ref(null);
 const activeIndex = ref(0);
+const dropdownRef = ref(null);
+
+function handleOutsideClick(e) {
+  if (dropdownOpen.value && dropdownRef.value && !dropdownRef.value.contains(e.target)) {
+    dropdownOpen.value = false;
+    searchQuery.value = "";
+  }
+}
+
+onMounted(() => {
+  document.addEventListener("click", handleOutsideClick);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleOutsideClick);
+});
 
 const filteredModels = computed(() => {
   const query = searchQuery.value.toLowerCase().trim();
