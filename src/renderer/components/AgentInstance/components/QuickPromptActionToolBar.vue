@@ -21,6 +21,7 @@
       @click="$emit('send', prompt.text)"
       :title="prompt.text"
     >{{ prompt.name }}</button>
+    <span class="quick-btn-separator quick-btn-end"></span>
     <button class="quick-btn quick-btn-add" @click="openModal">+</button>
     <QuickPromptModal
       :open="modalOpen"
@@ -66,7 +67,7 @@ function handleSave({ name, text }) {
   height: 24px;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   padding: 0 8px;
   gap: 4px;
   flex-shrink: 0;
@@ -96,10 +97,22 @@ function handleSave({ name, text }) {
   color: var(--text-secondary);
   font-weight: bold;
   padding: 2px 8px;
+  border: 1px solid transparent;
 }
 
 .quick-btn-add:hover {
   background-color: var(--bg-tertiary);
   color: var(--text);
+}
+
+.quick-btn-separator {
+  width: 1px;
+  height: 16px;
+  background-color: var(--border);
+  flex-shrink: 0;
+}
+
+.quick-btn-end {
+  margin-left: auto;
 }
 </style>
