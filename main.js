@@ -1,25 +1,7 @@
 require("module-alias").addAlias("@", __dirname + "/src");
 const { app, BrowserWindow, ipcMain } = require("electron");
-const axios = require("axios");
 const path = require("path");
-const { loadConfig } = require("@/config");
 const { registerIpcHandlers } = require("@/ipc");
-
-async function checkApi() {
-  const { host, apiKey } = loadConfig();
-  console.log("Checking API at:", host);
-  console.log("API Key:", apiKey);
-  try {
-    const res = await axios.get(`${host}/models`, {
-      headers: { Authorization: `Bearer ${apiKey}` },
-    });
-
-    const count = res.data.data ? res.data.data.length : 0;
-    console.log("API check OK. Models available:", count);
-  } catch (err) {
-    console.log("API check error:", err.message);
-  }
-}
 
 let win;
 
@@ -55,7 +37,6 @@ function createWindow() {
 
 app.on("ready", async () => {
   registerIpcHandlers();
-  await checkApi();
   createWindow();
 });
 

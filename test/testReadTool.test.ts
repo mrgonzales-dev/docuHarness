@@ -1,4 +1,11 @@
 import { chat } from "../src/ai-bridge";
+import * as fs from "fs";
+import * as path from "path";
+
+const configPath = path.join(__dirname, "../config/", "api_key.json");
+const raw = fs.readFileSync(configPath, "utf-8");
+const configData = JSON.parse(raw);
+const config = { host: configData.host, apiKey: configData.key };
 
 describe("AI reading tool", () => {
   test("chat() accepts tools option and returns toolCalls", async () => {
@@ -26,7 +33,7 @@ describe("AI reading tool", () => {
       },
     ];
 
-    const reply = await chat(messages, "wbridge/glm-5.2", { tools });
+    const reply = await chat(messages, "wbridge/glm-5.2", { tools }, undefined, undefined, config);
 
     console.log("[test] reply:", JSON.stringify(reply, null, 2));
 

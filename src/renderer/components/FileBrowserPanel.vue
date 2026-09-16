@@ -30,12 +30,22 @@
         />
       </div>
     </div>
+    <div class="settings-card" @click="settingsOpen = true">
+      <span class="settings-icon">&#9881;</span>
+      <span class="settings-text">Settings</span>
+    </div>
+    <SettingsModal
+      :open="settingsOpen"
+      @close="settingsOpen = false"
+      @saved="$emit('settingsSaved')"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from "vue";
 import FileBrowserEntry from "./FileBrowserEntry.vue";
+import SettingsModal from "./Settings/SettingsModal.vue";
 import folderOpenIcon from "../../icons/folder-open-icon.svg?raw";
 import folderClosedIcon from "../../icons/folder-open-closed.svg?raw";
 
@@ -43,12 +53,13 @@ const props = defineProps({
   folderPath: { type: String, default: "" },
 });
 
-defineEmits(["selectFolder"]);
+defineEmits(["selectFolder", "settingsSaved"]);
 
 const entries = ref([]);
 const loading = ref(false);
 const error = ref("");
 const selectedFile = ref("");
+const settingsOpen = ref(false);
 
 async function loadContents() {
   if (!props.folderPath) {
@@ -152,6 +163,7 @@ watch(() => props.folderPath, loadContents, { immediate: true });
   overflow-y: auto;
   padding: 8px;
   flex: 1;
+  max-height: calc(100vh - 120px);
   display: flex;
   flex-direction: column;
 }
@@ -169,5 +181,26 @@ watch(() => props.folderPath, loadContents, { immediate: true });
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.settings-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.settings-card:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text);
+}
+
+.settings-icon {
+  font-size: 14px;
 }
 </style>

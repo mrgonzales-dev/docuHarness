@@ -1,20 +1,6 @@
-const fs = require("fs");
-const path = require("path");
 const axios = require("axios");
 
-const configPath = path.join(__dirname, "../config/", "api_key.json");
-
-function loadConfig() {
-  const raw = fs.readFileSync(configPath, "utf-8");
-  const data = JSON.parse(raw);
-  return {
-    host: data.host,
-    apiKey: data.key,
-  };
-}
-
-async function getModels() {
-  const { host, apiKey } = loadConfig();
+async function getModels(host, apiKey) {
   const res = await axios.get(`${host}/models`, {
     headers: { Authorization: `Bearer ${apiKey}` },
   });
@@ -22,4 +8,4 @@ async function getModels() {
   return models;
 }
 
-module.exports = { loadConfig, getModels };
+module.exports = { getModels };

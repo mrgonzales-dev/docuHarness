@@ -2,6 +2,11 @@ import { AgentSession } from "@/ipc/components/agent";
 import * as fs from "fs";
 import * as path from "path";
 
+const configPath = path.join(__dirname, "../config/", "api_key.json");
+const raw = fs.readFileSync(configPath, "utf-8");
+const configData = JSON.parse(raw);
+const config = { host: configData.host, apiKey: configData.key };
+
 describe("AI tool calling end-to-end", () => {
   const tmpDir = path.join(__dirname, "tmp-toolcall");
   const tmpFile = path.join(tmpDir, "doc.txt");
@@ -26,7 +31,7 @@ describe("AI tool calling end-to-end", () => {
   test("AI calls readFile tool and uses the result", async () => {
     const result = await session.handle(
       {},
-      { message: `Read the file at ${tmpFile} and tell me what it says.`, model: "wbridge/glm-5.2" }
+      { message: `Read the file at ${tmpFile} and tell me what it says.`, model: "wbridge/glm-5.2", ...config }
     );
 
     console.log("[test] Reply:", result.reply);

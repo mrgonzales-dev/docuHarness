@@ -36,6 +36,7 @@ import MessageInput from "./components/MessageInput.vue";
 import QuickPromptActionToolBar from "./components/QuickPromptActionToolBar.vue";
 import { applyToolCall } from "./partials/toolCalls";
 import { shouldFlush, dequeue, handleSend as queueSend } from "./partials/agentQueue";
+import { getProviderConfig } from "../Settings/partials/providerConfig";
 
 const props = defineProps({
   models: { type: Array, default: () => [] },
@@ -114,7 +115,8 @@ async function sendMessage(text) {
   }
 
   try {
-    const result = await window.api.chat(text, selectedModel.value, props.folderPath);
+    const { host, apiKey } = getProviderConfig();
+    const result = await window.api.chat(text, selectedModel.value, props.folderPath, host, apiKey);
     if (result.ok) {
       messages.value[thinkingId] = { sender: "AI", text: result.reply };
     } else if (result.error === "Interrupted") {

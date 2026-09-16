@@ -8,8 +8,9 @@ const agent = require("./components/agent");
 const models = require("./components/models");
 const dialog = require("./components/dialog");
 const folder = require("./components/folder");
+const settings = require("./components/settings");
 
-const handlers = [agent, models, dialog, folder];
+const handlers = [agent, models, dialog, folder, settings];
 
 function registerIpcHandlers() {
   for (const { name, handler } of handlers) {

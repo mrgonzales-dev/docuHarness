@@ -36,7 +36,7 @@ class AgentSession {
     }
   }
 
-  async handle(event, { message, model, folderPath }) {
+  async handle(event, { message, model, folderPath, host, apiKey }) {
     // Setup: timing, token tracking, abort controller
     const startTime = Date.now();
     let totalTokens = 0;
@@ -112,6 +112,7 @@ class AgentSession {
         { tools: toolDefinitions },
         onProgress,
         signal,
+        { host, apiKey },
       );
 
       // Tool-call loop: execute tools, feed results back to AI
@@ -165,6 +166,7 @@ class AgentSession {
           { tools: toolDefinitions },
           onProgress,
           signal,
+          { host, apiKey },
         );
       }
 

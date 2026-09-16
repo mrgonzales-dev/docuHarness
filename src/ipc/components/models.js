@@ -8,9 +8,9 @@ const { getModels } = require("@/config");
 
 module.exports = {
   name: "get-models",
-  handler: async () => {
+  handler: async (_e, { host, apiKey }) => {
     try {
-      const models = await getModels();
+      const models = await getModels(host, apiKey);
       return { ok: true, models };
     } catch (err) {
       return { ok: false, error: err.message };

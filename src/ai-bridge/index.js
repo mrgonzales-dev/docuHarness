@@ -1,5 +1,4 @@
 const axios = require("axios");
-const { loadConfig } = require("../config.js");
 
 /**
  * Streaming chat completion.
@@ -7,8 +6,8 @@ const { loadConfig } = require("../config.js");
  * Calls onProgress({ content, toolCalls, usage }) as chunks arrive
  * so the caller can update the UI in real time.
  */
-async function chat(messages, model, options = {}, onProgress, abortSignal) {
-  const { host, apiKey } = loadConfig();
+async function chat(messages, model, options = {}, onProgress, abortSignal, config) {
+  const { host, apiKey } = config;
 
   const requestBody = {
     model,

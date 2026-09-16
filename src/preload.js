@@ -23,11 +23,13 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("api", {
-  chat: (message, model, folderPath) =>
+  chat: (message, model, folderPath, host, apiKey) =>
     ipcRenderer.invoke("agent", {
       message,
       model,
       folderPath,
+      host,
+      apiKey,
     }),
   onThinking: (callback) => {
     const listener = (_e, data) => callback(data);
@@ -39,7 +41,7 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.on("agent:tool", listener);
     return () => ipcRenderer.removeListener("agent:tool", listener);
   },
-  getModels: () => ipcRenderer.invoke("get-models"),
+  getModels: (host, apiKey) => ipcRenderer.invoke("get-models", { host, apiKey }),
   selectFolder: () => ipcRenderer.invoke("dialog:openFolder"),
   readFolderContents: (path) => ipcRenderer.invoke("folder:readContents", path),
   interruptChat: () => ipcRenderer.invoke("agent:interrupt"),
@@ -47,4 +49,6 @@ contextBridge.exposeInMainWorld("api", {
   windowMaximize: () => ipcRenderer.invoke("window:maximize"),
   windowClose: () => ipcRenderer.invoke("window:close"),
   platform: process.platform,
+  testConnection: (host, apiKey) =>
+    ipcRenderer.invoke("settings:test", { host, apiKey }),
 });
